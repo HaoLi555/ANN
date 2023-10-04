@@ -127,14 +127,15 @@ class Linear(Layer):
 
     def forward(self, input):
         # TODO START
-        '''Your codes here'''
-        pass
+        self._saved_for_backward(input)
+        return input@self.W+self.b
         # TODO END
 
     def backward(self, grad_output):
         # TODO START
-        '''Your codes here'''
-        pass
+        self.grad_W=np.outer(input,grad_output)
+        self.grad_b=grad_output
+        return grad_output*self.W.T
         # TODO END
 
     def update(self, config):
