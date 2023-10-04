@@ -1,0 +1,59 @@
+########################
+# Additional Files
+########################
+# test_gpu_colab.ipynb
+# run_colab.ipynb
+
+########################
+# Filled Code
+########################
+# ../codes/loss.py:1
+
+# ../codes/loss.py:2
+
+# ../codes/loss.py:3
+
+# ../codes/loss.py:4
+
+# ../codes/loss.py:5
+
+# ../codes/loss.py:6
+
+# ../codes/loss.py:7
+
+# ../codes/loss.py:8
+
+# ../codes/layers.py:1
+        output=np.where(input>0,self.lbd*input,self.mul*(np.exp(input)-1))
+        self._saved_for_backward(output)
+        return output
+
+# ../codes/layers.py:2
+        output=self._saved_tensor
+        return np.where(output>0,self.lbd,input+self.mul)
+
+# ../codes/layers.py:3
+
+# ../codes/layers.py:4
+
+# ../codes/layers.py:5
+
+# ../codes/layers.py:6
+
+# ../codes/layers.py:7
+
+# ../codes/layers.py:8
+
+
+########################
+# References
+########################
+
+########################
+# Other Modifications
+########################
+# _codes/layers.py -> ../codes/layers.py
+# 53 +         self.lbd=1.0507
+# 54 +         self.alpha=1.67326
+# 55 +         self.mul=self.lbd*self.alpha
+
