@@ -8,14 +8,13 @@ class MSELoss(object):
 
     def forward(self, input, target):
         # TODO START
-        # input (bs, n), target (n)
-        
+        # input (bs, n), target (bs, n)
+        return np.sum(np.power(input-target,2))/input.shape[0]
         # TODO END
 
     def backward(self, input, target):
 		# TODO START
-        '''Your codes here'''
-        pass
+        return (input-target)*2/input.shape[0]
 		# TODO END
 
 
@@ -25,14 +24,17 @@ class SoftmaxCrossEntropyLoss(object):
 
     def forward(self, input, target):
         # TODO START
-        '''Your codes here'''
-        pass
+        exp=np.exp(input)
+        # one-hot, reduce computational cost
+        ln=np.where(target==0,0,np.log(exp/(np.sum(exp,axis=1)[:,np.newaxis])))
+        return np.sum(ln*(-target))/input.shape[0]
         # TODO END
 
     def backward(self, input, target):
         # TODO START
-        '''Your codes here'''
-        pass
+        exp=np.exp(input)
+        ratio=exp/(np.sum(exp,axis=1)[:,np.newaxis])
+        return np.where(target==0,ratio,ratio-1)/input.shape[0]
         # TODO END
 
 
