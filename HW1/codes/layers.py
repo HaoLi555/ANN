@@ -133,11 +133,10 @@ class Linear(Layer):
 
     def backward(self, grad_output):
         # TODO START
-        # grad_output (batch_size, out_dim)
+        # grad_output (batch_size, out_dim), input (batch_size, in_dim)
         input=self._saved_tensor
-        temp=np.sum(grad_output,axis=0)
-        self.grad_W=np.outer(input,temp)
-        self.grad_b=temp
+        self.grad_W=np.matmul(input.T,grad_output)
+        self.grad_b=np.sum(grad_output,axis=0)
         return grad_output*self.W.T
         # TODO END
 

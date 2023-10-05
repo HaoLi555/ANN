@@ -8,8 +8,8 @@ class MSELoss(object):
 
     def forward(self, input, target):
         # TODO START
-        '''Your codes here'''
-        pass
+        # input (bs, n), target (n)
+        
         # TODO END
 
     def backward(self, input, target):
