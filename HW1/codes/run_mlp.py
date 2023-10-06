@@ -23,7 +23,7 @@ loss = MSELoss(name='loss')
 #       'disp_freq' denotes number of iterations in one epoch to display information.
 
 config = {
-    'learning_rate': 0.0,
+    'learning_rate': 0.5,
     'weight_decay': 0.0,
     'momentum': 0.0,
     'batch_size': 100,
@@ -58,12 +58,12 @@ axs[0].plot(train_epochs,loss_train,'-g',label='loss_train')
 axs[0].plot(test_epochs,loss_test,':c',label='loss_test')
 axs[0].set_xlabel('epoch')
 axs[0].set_ylabel('loss')
-axs[0].legend(bbox_to_anchor=(1.3,1))
+axs[0].legend()
 
 axs[1].plot(train_epochs,acc_train,label='acc_train')
 axs[1].plot(test_epochs,acc_test,label='acc_test')
 axs[1].set_xlabel('epoch')
 axs[1].set_ylabel('loss')
-axs[1].legend(bbox_to_anchor=(1.3,1))
+axs[1].legend()
 
-plt.show()
+fig.savefig('result.png')
