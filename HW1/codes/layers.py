@@ -137,7 +137,7 @@ class Linear(Layer):
         input=self._saved_tensor
         self.grad_W=np.matmul(input.T,grad_output)
         self.grad_b=np.sum(grad_output,axis=0)
-        return grad_output*self.W.T
+        return grad_output@self.W.T
         # TODO END
 
     def update(self, config):
