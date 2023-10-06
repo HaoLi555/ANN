@@ -1,6 +1,6 @@
 from network import Network
 from utils import LOG_INFO
-from layers import Selu, Swish, Linear, Gelu
+from layers import Selu, Swish, Linear, Gelu, Relu, Sigmoid
 from loss import MSELoss, SoftmaxCrossEntropyLoss, HingeLoss, FocalLoss
 from solve_net import train_net, test_net
 from load_data import load_mnist_2d
@@ -13,8 +13,9 @@ train_data, test_data, train_label, test_label = load_mnist_2d('data')
 # You should explore different model architecture
 model = Network()
 model.add(Linear('fc1', 784, 10, 0.01))
+model.add(Swish('relu'))
 
-loss = MSELoss(name='loss')
+loss = HingeLoss(name='loss')
 
 # Training configuration
 # You should adjust these hyperparameters
@@ -23,7 +24,7 @@ loss = MSELoss(name='loss')
 #       'disp_freq' denotes number of iterations in one epoch to display information.
 
 config = {
-    'learning_rate': 0.5,
+    'learning_rate': 1e-5,
     'weight_decay': 0.0,
     'momentum': 0.0,
     'batch_size': 100,
@@ -55,15 +56,17 @@ for epoch in range(config['max_epoch']):
 fig,axs=plt.subplots(2)
 
 axs[0].plot(train_epochs,loss_train,'-g',label='loss_train')
-axs[0].plot(test_epochs,loss_test,':c',label='loss_test')
+axs[0].plot(test_epochs,loss_test,':k',label='loss_test')
 axs[0].set_xlabel('epoch')
 axs[0].set_ylabel('loss')
 axs[0].legend()
 
-axs[1].plot(train_epochs,acc_train,label='acc_train')
-axs[1].plot(test_epochs,acc_test,label='acc_test')
+axs[1].plot(train_epochs,acc_train,'-g',label='acc_train')
+axs[1].plot(test_epochs,acc_test,':k',label='acc_test')
 axs[1].set_xlabel('epoch')
 axs[1].set_ylabel('loss')
 axs[1].legend()
+
+plt.subplots_adjust(hspace=0.5)
 
 fig.savefig('result.png')
