@@ -13,9 +13,10 @@ train_data, test_data, train_label, test_label = load_mnist_2d('data')
 # You should explore different model architecture
 model = Network()
 model.add(Linear('fc1', 784, 10, 0.01))
-model.add(Swish('relu'))
+# model.add(Linear('fc2',256,10,0.01))
+model.add(Selu('activation'))
 
-loss = HingeLoss(name='loss')
+loss = MSELoss(name='loss')
 
 # Training configuration
 # You should adjust these hyperparameters
@@ -24,7 +25,7 @@ loss = HingeLoss(name='loss')
 #       'disp_freq' denotes number of iterations in one epoch to display information.
 
 config = {
-    'learning_rate': 1e-5,
+    'learning_rate': 1e-4,
     'weight_decay': 0.0,
     'momentum': 0.0,
     'batch_size': 100,

@@ -64,7 +64,7 @@ class Selu(Layer):
     def backward(self, grad_output):
         # TODO START
         output=self._saved_tensor
-        return np.where(output>0,grad_output*self.lbd,grad_output*(input+self.mul))
+        return np.where(output>0,grad_output*self.lbd,grad_output*(output+self.mul))
         # TODO END
 
 class Swish(Layer):
