@@ -95,11 +95,8 @@ class Gelu(Layer):
     def forward(self, input):
         # TODO START
         x=self.alpha*(input+self.beta*np.power(input,3))
-        e_x=np.exp(x)
-        e_neg_x=-e_x
-        denominator=e_x+e_neg_x
-        y=1+(e_x-e_neg_x)/denominator
-        self._saved_for_backward(np.vstack(input,y,denominator))
+        y=1+np.tanh(x) 
+        self._saved_for_backward(np.vstack((input,y,x)))
         return 0.5*input*y
         # TODO END
     
@@ -107,8 +104,9 @@ class Gelu(Layer):
         # TODO START
         input=self._saved_tensor[0]
         y=self._saved_tensor[1]
-        denominator=self._saved_tensor[2]
-        return grad_output*0.5*(y+input*(4/np.power(denominator,2))*self.alpha*(1+3*self.beta*np.power(input,2)))
+        x=self._saved_tensor[2]
+        plus=2*np.sinh(x)
+        return grad_output*0.5*(y+input*(4/np.power(plus,2))*self.alpha*(1+3*self.beta*np.power(input,2)))
         # TODO END
 
 class Linear(Layer):

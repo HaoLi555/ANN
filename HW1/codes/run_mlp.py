@@ -14,7 +14,7 @@ train_data, test_data, train_label, test_label = load_mnist_2d('data')
 model = Network()
 model.add(Linear('fc1', 784, 10, 0.01))
 # model.add(Linear('fc2',256,10,0.01))
-model.add(Selu('activation'))
+model.add(Gelu('activation'))
 
 loss = MSELoss(name='loss')
 
@@ -25,7 +25,7 @@ loss = MSELoss(name='loss')
 #       'disp_freq' denotes number of iterations in one epoch to display information.
 
 config = {
-    'learning_rate': 1e-4,
+    'learning_rate': 1e-5,
     'weight_decay': 0.0,
     'momentum': 0.0,
     'batch_size': 100,
