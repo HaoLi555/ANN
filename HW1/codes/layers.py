@@ -107,7 +107,7 @@ class Gelu(Layer):
         input=self._saved_tensor[:batch_size]
         y=self._saved_tensor[batch_size:2*batch_size]
         x=self._saved_tensor[2*batch_size:]
-        plus=2*np.sinh(x)
+        plus=2*np.cosh(x)
         return grad_output*0.5*(y+input*(4/np.power(plus,2))*self.alpha*(1+3*self.beta*np.power(input,2)))
         # TODO END
 
