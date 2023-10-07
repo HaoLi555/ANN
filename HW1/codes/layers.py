@@ -80,8 +80,9 @@ class Swish(Layer):
 
     def backward(self, grad_output):
         # TODO START
-        input=self._saved_tensor[0]
-        output=self._saved_tensor[1]
+        batch_size=grad_output.shape[0]
+        input=self._saved_tensor[:batch_size]
+        output=self._saved_tensor[batch_size:]
         ratio=output/input
         return grad_output*(ratio+output*(1-ratio))
         # TODO END
@@ -102,9 +103,10 @@ class Gelu(Layer):
     
     def backward(self, grad_output):
         # TODO START
-        input=self._saved_tensor[0]
-        y=self._saved_tensor[1]
-        x=self._saved_tensor[2]
+        batch_size=grad_output.shape[0]
+        input=self._saved_tensor[:batch_size]
+        y=self._saved_tensor[batch_size:2*batch_size]
+        x=self._saved_tensor[2*batch_size:]
         plus=2*np.sinh(x)
         return grad_output*0.5*(y+input*(4/np.power(plus,2))*self.alpha*(1+3*self.beta*np.power(input,2)))
         # TODO END
