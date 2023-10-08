@@ -27,7 +27,7 @@ class SoftmaxCrossEntropyLoss(object):
         exp=np.exp(input)
         # storage
         self.exp=exp
-        # one-hot, reduce computational cost
+        # one-hot, reduce computational cost (hopefully)
         ln=np.where(target==0,0,np.log(exp/(np.sum(exp,axis=1)[:,np.newaxis])))
         return np.sum(ln*(-target))/input.shape[0]
         # TODO END
@@ -57,7 +57,7 @@ class HingeLoss(object):
 
     def backward(self, input, target):
         # TODO START
-        # the implement should be related to the definition of np.maximum
+        # the implement should be related to the definition of max
         non_zero_count=np.sum(self.h>0,axis=1)
         return np.where(target==1,-non_zero_count[:,np.newaxis]/input.shape[0],np.where(self.h==0,0,1/input.shape[0]))
         # TODO END
