@@ -73,12 +73,16 @@ class FocalLoss(object):
 
     def forward(self, input, target):
         # TODO START
-        '''Your codes here'''
-        pass
+        exp=np.exp(input)
+        sum=np.sum(exp,axis=1)
+        self.softmax=exp/sum[:,np.newaxis]
+        self.alpha_for_each_sample=np.sum(self.alpha*target,axis=1)
+        self.softmax_for_each_sample=np.sum(target*self.softmax,axis=1)
+        return -np.sum(self.alpha_for_each_sample*np.power(1-self.softmax_for_each_sample,self.gamma)*np.log(self.softmax_for_each_sample))/len(input)
         # TODO END
 
     def backward(self, input, target):
         # TODO START
-        '''Your codes here'''
-        pass
+        factor_for_each_sample=-self.alpha_for_each_sample*np.power(1-self.softmax_for_each_sample,self.gamma-1)*(1-self.softmax_for_each_sample+self.gamma*self.softmax_for_each_sample*np.log(self.softmax_for_each_sample))
+        return np.where(target==0,factor_for_each_sample[:,np.newaxis]*(-self.softmax),factor_for_each_sample[:,np.newaxis]*(1-self.softmax))/len(input)
         # TODO END
