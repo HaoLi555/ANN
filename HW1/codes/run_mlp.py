@@ -12,11 +12,12 @@ train_data, test_data, train_label, test_label = load_mnist_2d('data')
 # Your model defintion here
 # You should explore different model architecture
 model = Network()
-model.add(Linear('fc1', 784, 10, 0.01))
-# model.add(Linear('fc2',256,10,0.01))
-model.add(Gelu('activation'))
+model.add(Linear('fc1', 784, 256, 0.01))
+# model.add(Gelu('activation'))
+model.add(Linear('fc2',256,10,0.01))
 
-loss = MSELoss(name='loss')
+
+loss = HingeLoss(name='loss')
 
 # Training configuration
 # You should adjust these hyperparameters
@@ -26,7 +27,7 @@ loss = MSELoss(name='loss')
 
 config = {
     'learning_rate': 1e-4,
-    'weight_decay': 0.0,
+    'weight_decay': 0.1,
     'momentum': 0.0,
     'batch_size': 100,
     'max_epoch': 100,
@@ -47,12 +48,15 @@ for epoch in range(config['max_epoch']):
     loss_train.append(train_metric[0])
     acc_train.append(train_metric[1])
 
-    if epoch % config['test_epoch'] == 0:
+    if (epoch+1) % config['test_epoch'] == 0:
         LOG_INFO('Testing @ %d epoch...' % (epoch))
         test_metric=test_net(model, loss, test_data, test_label, config['batch_size'])
         test_epochs.append(epoch)
         loss_test.append(test_metric[0])
         acc_test.append(test_metric[1])
+
+print(f"Final training loss: {loss_train[-1]}, final training acc: {acc_train[-1]}")
+print(f"Final test loss: {loss_test[-1]}, final test acc: {acc_test[-1]}")
 
 fig,axs=plt.subplots(2)
 
