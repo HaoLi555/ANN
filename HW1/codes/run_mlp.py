@@ -120,7 +120,7 @@ axs[0].legend()
 axs[1].plot(train_epochs,acc_train,'-g',label='acc_train')
 axs[1].plot(test_epochs,acc_test,':k',label='acc_test')
 axs[1].set_xlabel('epoch')
-axs[1].set_ylabel('loss')
+axs[1].set_ylabel('acc')
 axs[1].legend()
 
 plt.subplots_adjust(hspace=0.5)
