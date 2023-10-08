@@ -106,8 +106,11 @@ for epoch in range(config['max_epoch']):
         loss_test.append(test_metric[0])
         acc_test.append(test_metric[1])
 
-print(f"Final training loss: {loss_train[-1]}, final training acc: {acc_train[-1]}")
-print(f"Final test loss: {loss_test[-1]}, final test acc: {acc_test[-1]}")
+final_training=f"Final training loss: {loss_train[-1]}, final training acc: {acc_train[-1]}"
+final_test=f"Final test loss: {loss_test[-1]}, final test acc: {acc_test[-1]}"
+
+print(final_training)
+print(final_test)
 
 fig,axs=plt.subplots(2)
 
@@ -125,4 +128,11 @@ axs[1].legend()
 
 plt.subplots_adjust(hspace=0.5)
 
-fig.savefig(f'{args.n}_{args.a}_{args.l}_result.png')
+name=f"{args.n}_{args.a}_{args.l}"
+fig.savefig(name+'_result.png')
+
+with open('results.txt','a') as f:
+    f.write(name+'\n')
+    f.write(final_training+'\n')
+    f.write(final_test+'\n')
+    f.write('\n')
