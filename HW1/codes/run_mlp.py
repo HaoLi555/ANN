@@ -6,18 +6,67 @@ from solve_net import train_net, test_net
 from load_data import load_mnist_2d
 import numpy as np
 import matplotlib.pyplot as plt
+import argparse
 
 train_data, test_data, train_label, test_label = load_mnist_2d('data')
 
 # Your model defintion here
 # You should explore different model architecture
-model = Network()
-model.add(Linear('fc1', 784, 256, 0.01))
-# model.add(Gelu('activation'))
-model.add(Linear('fc2',256,10,0.01))
 
+loss_map={
+    'M':MSELoss,
+    'S':SoftmaxCrossEntropyLoss,
+    'H':HingeLoss,
+    'F':FocalLoss
+}
 
-loss = HingeLoss(name='loss')
+activation_map={
+    'R':Relu,
+    'Si':Sigmoid,
+    'Se':Selu,
+    'Ge':Gelu,
+    'Sw':Swish
+}
+
+parser=argparse.ArgumentParser()
+parser.add_argument('-n',type=int,choices=[1,2,3],default=1,help='number of layers')
+parser.add_argument('-l',type=str,choices=['M','S','H','F'],default='M',help="loss function")
+parser.add_argument('-a',type=str,choices=['R','Si','Se','Ge','Sw'],default='R',help="actiation function")
+
+args=parser.parse_args()
+
+def one_layer_net(args):
+    model=Network()
+    model.add(Linear('fc1', 784, 10, 0.01))
+    model.add(activation_map[args.a](args.a))
+    loss=loss_map[args.l]('loss')
+    return model,loss
+
+def two_layers_net(args):
+    model=Network()
+    model.add(Linear('fc1', 784, 256, 0.01))
+    model.add(activation_map[args.a](args.a))
+    model.add(Linear('fc2', 256, 10, 0.01))
+    model.add(activation_map[args.a](args.a))
+    loss=loss_map[args.l]('loss')
+    return model,loss
+
+def three_layers_net(args):
+    model=Network()
+    model.add(Linear('fc1', 784, 256, 0.01))
+    model.add(activation_map[args.a](args.a))
+    model.add(Linear('fc2', 256, 49, 0.01))
+    model.add(activation_map[args.a](args.a))
+    model.add(Linear('fc3', 49, 10, 0.01))
+    model.add(activation_map[args.a](args.a))
+    loss=loss_map[args.l]('loss')
+    return model,loss
+
+net_map={
+    1:one_layer_net,
+    2:two_layers_net,
+    3:three_layers_net
+}
 
 # Training configuration
 # You should adjust these hyperparameters
@@ -26,14 +75,16 @@ loss = HingeLoss(name='loss')
 #       'disp_freq' denotes number of iterations in one epoch to display information.
 
 config = {
-    'learning_rate': 1e-4,
-    'weight_decay': 0.1,
-    'momentum': 0.0,
+    'learning_rate': 0.01,
+    'weight_decay': 0.0007,
+    'momentum': 0.9,
     'batch_size': 100,
     'max_epoch': 100,
-    'disp_freq': 50,
+    'disp_freq': 200,
     'test_epoch': 5
 }
+
+model,loss=net_map[args.n](args)
 
 loss_train=[]
 acc_train=[]
@@ -74,4 +125,4 @@ axs[1].legend()
 
 plt.subplots_adjust(hspace=0.5)
 
-fig.savefig('result.png')
+fig.savefig(f'{args.n}_{args.a}_{args.l}_result.png')
