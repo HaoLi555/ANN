@@ -21,7 +21,7 @@ class Network(object):
 
         return output
 
-    def backward(self, grad_output, train=True):
+    def backward(self, grad_output):
         grad_input = grad_output
         for i in range(self.num_layers - 1, -1, -1):
             if isinstance(self.layer_list[i],Dropout):

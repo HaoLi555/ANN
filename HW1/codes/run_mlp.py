@@ -81,26 +81,17 @@ net_map={
 #       one epoch means model has gone through all the training samples.
 #       'disp_freq' denotes number of iterations in one epoch to display information.
 
-# 一个不错的参数
-# config = {
-#     'learning_rate': 0.01,
-#     'weight_decay': 0.0007,
-#     'momentum': 0.9,
-#     'batch_size': 100,
-#     'max_epoch': 100,
-#     'disp_freq': 200,
-#     'test_epoch': 5
-# }
-
+# one possible config example
 config = {
-    'learning_rate': 13,
-    'weight_decay': 0.0,
-    'momentum': 0.05,
+    'learning_rate': 0.01,
+    'weight_decay': 0.0007,
+    'momentum': 0.9,
     'batch_size': 100,
     'max_epoch': 100,
     'disp_freq': 200,
     'test_epoch': 5
 }
+
 
 model,loss=net_map[args.n](args)
 
