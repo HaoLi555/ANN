@@ -48,7 +48,7 @@ def two_layers_net(args):
     model.add(Linear('fc1', 784, 256, 0.01))
     model.add(activation_map[args.a](args.a))
     if args.d:
-        model.add(Dropout('dropout',dropout_prob=0.5))
+        model.add(Dropout('dropout',dropout_prob=0.3))
     model.add(Linear('fc2', 256, 10, 0.01))
     model.add(activation_map[args.a](args.a))
     loss=loss_map[args.l]('loss')
@@ -59,11 +59,11 @@ def three_layers_net(args):
     model.add(Linear('fc1', 784, 256, 0.01))
     model.add(activation_map[args.a](args.a))
     if args.d:
-        model.add(Dropout('dropout',dropout_prob=0.5))
+        model.add(Dropout('dropout',dropout_prob=0.3))
     model.add(Linear('fc2', 256, 49, 0.01))
     model.add(activation_map[args.a](args.a))
     if args.d:
-        model.add(Dropout('dropout',dropout_prob=0.5))
+        model.add(Dropout('dropout',dropout_prob=0.3))
     model.add(Linear('fc3', 49, 10, 0.01))
     model.add(activation_map[args.a](args.a))
     loss=loss_map[args.l]('loss')
@@ -81,6 +81,7 @@ net_map={
 #       one epoch means model has gone through all the training samples.
 #       'disp_freq' denotes number of iterations in one epoch to display information.
 
+# 一个不错的参数
 # config = {
 #     'learning_rate': 0.01,
 #     'weight_decay': 0.0007,
