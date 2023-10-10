@@ -1,0 +1,76 @@
+2_Se_S
+Final training loss: 0.0545622013825774, final training acc: 0.9862000000000001
+Final test loss: 0.07527396392060076, final test acc: 0.9768000000000002
+
+2_Ge_S
+Final training loss: 0.05016609857679264, final training acc: 0.9881166666666666
+Final test loss: 0.072029889841187, final test acc: 0.9793999999999999
+
+2_Sw_S
+Final training loss: 0.055706759638205566, final training acc: 0.9865
+Final test loss: 0.07902298802710067, final test acc: 0.9771
+
+2_R_H
+Final training loss: 0.12458377784324892, final training acc: 0.9955999999999999
+Final test loss: 0.36222596929508455, final test acc: 0.9829000000000001
+
+2_Si_H
+Final training loss: 36.435398418793646, final training acc: 0.9652666666666666
+Final test loss: 36.46441677975888, final test acc: 0.9621000000000001
+
+2_Se_H
+Final training loss: 0.14285526574039972, final training acc: 0.9937666666666668
+Final test loss: 0.409679493097608, final test acc: 0.9802999999999998
+
+2_Ge_H
+Final training loss: 0.10642859213809192, final training acc: 0.9964500000000002
+Final test loss: 0.4572742913532921, final test acc: 0.9797999999999999
+
+2_Sw_H
+Final training loss: 0.12897361232583002, final training acc: 0.9949500000000001
+Final test loss: 0.3790172844202509, final test acc: 0.9812000000000001
+
+2_R_F
+Final training loss: 0.1503379399069474, final training acc: 0.39658333333333334
+Final test loss: 0.14968679308338084, final test acc: 0.40240000000000004
+
+2_Si_F
+Final training loss: 0.1712922673558991, final training acc: 0.5278833333333334
+Final test loss: 0.1708286202865165, final test acc: 0.5253
+
+2_Se_F
+Final training loss: 0.08021554657432334, final training acc: 0.8375166666666667
+Final test loss: 0.07901785866213132, final test acc: 0.8411
+
+2_Ge_F
+Final training loss: 0.08193889766630347, final training acc: 0.8230666666666666
+Final test loss: 0.08069234596420717, final test acc: 0.8262999999999999
+
+2_Sw_F
+Final training loss: 0.08224566513237443, final training acc: 0.8185833333333333
+Final test loss: 0.08096964337366142, final test acc: 0.8144000000000001
+
+2_Se_F
+Final training loss: 0.08015636533704038, final training acc: 0.8377833333333333
+Final test loss: 0.07916448894507934, final test acc: 0.8373
+
+2_Ge_F
+Final training loss: 0.08200992587377355, final training acc: 0.8227166666666667
+Final test loss: 0.08080289002994233, final test acc: 0.8229000000000002
+
+2_Sw_F
+Final training loss: 0.08222567318900269, final training acc: 0.8175166666666666
+Final test loss: 0.08093831252013953, final test acc: 0.8175
+
+3_Si_M
+Final training loss: 0.8998943493191721, final training acc: 0.1100166666666667
+Final test loss: 0.8997441374728717, final test acc: 0.11349999999999999
+
+3_Se_M
+Final training loss: 0.09261435940539313, final training acc: 0.9680166666666667
+Final test loss: 0.09450610816985895, final test acc: 0.9633999999999999
+
+3_Ge_F
+Final training loss: 0.1864015108372398, final training acc: 0.11236666666666668
+Final test loss: 0.18639470114215453, final test acc: 0.11349999999999999
+

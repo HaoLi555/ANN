@@ -1,27 +1,58 @@
 ########################
 # Additional Files
 ########################
-# test_gpu_colab.ipynb
+# generate_sh.py
+# __pycache__
 # run_colab.ipynb
+# test_gpu_colab.ipynb
 
 ########################
 # Filled Code
 ########################
 # ../codes/loss.py:1
+        # input (bs, n), target (bs, n)
+        return np.sum(np.power(input-target,2))/input.shape[0]
 
 # ../codes/loss.py:2
+        return (input-target)*2/input.shape[0]
 
 # ../codes/loss.py:3
+        exp=np.exp(input)
+        # storage
+        self.exp=exp
+        # one-hot, reduce computational cost (hopefully)
+        ln=np.where(target==0,0,np.log(exp/(np.sum(exp,axis=1)[:,np.newaxis])))
+        return np.sum(ln*(-target))/input.shape[0]
 
 # ../codes/loss.py:4
+        ratio=self.exp/(np.sum(self.exp,axis=1)[:,np.newaxis])
+        return np.where(target==0,ratio,ratio-1)/input.shape[0]
 
 # ../codes/loss.py:5
+        # one_index and correct_score (batch_size)
+        one_index=np.argmax(target,axis=1)
+        correct_score=input[np.arange(0,input.shape[0]),one_index]
+        h=np.where(target==1,0,np.maximum(0,self.margin-correct_score[:,np.newaxis]+input))
+        # storage
+        self.h=h
+        return np.sum(h)/input.shape[0]
 
 # ../codes/loss.py:6
+        # the implement should be related to the definition of max
+        non_zero_count=np.sum(self.h>0,axis=1)
+        return np.where(target==1,-non_zero_count[:,np.newaxis]/input.shape[0],np.where(self.h==0,0,1/input.shape[0]))
 
 # ../codes/loss.py:7
+        exp=np.exp(input)
+        sum=np.sum(exp,axis=1)
+        self.softmax=exp/sum[:,np.newaxis]
+        self.alpha_for_each_sample=np.sum(self.alpha*target,axis=1)
+        self.softmax_for_each_sample=np.sum(target*self.softmax,axis=1)
+        return -np.sum(self.alpha_for_each_sample*np.power(1-self.softmax_for_each_sample,self.gamma)*np.log(self.softmax_for_each_sample))/len(input)
 
 # ../codes/loss.py:8
+        factor_for_each_sample=-self.alpha_for_each_sample*np.power(1-self.softmax_for_each_sample,self.gamma-1)*(1-self.softmax_for_each_sample+self.gamma*self.softmax_for_each_sample*np.log(self.softmax_for_each_sample))
+        return np.where(target==0,factor_for_each_sample[:,np.newaxis]*(-self.softmax),factor_for_each_sample[:,np.newaxis]*(1-self.softmax))/len(input)
 
 # ../codes/layers.py:1
         output=np.where(input>0,self.lbd*input,self.mul*(np.exp(input)-1))
@@ -30,19 +61,44 @@
 
 # ../codes/layers.py:2
         output=self._saved_tensor
-        return np.where(output>0,self.lbd,input+self.mul)
+        return np.where(output>0,grad_output*self.lbd,grad_output*(output+self.mul))
 
 # ../codes/layers.py:3
+        output=input/(1+np.exp(-input))
+        self._saved_for_backward(np.vstack((input,output)))
+        return output
 
 # ../codes/layers.py:4
+        batch_size=grad_output.shape[0]
+        input=self._saved_tensor[:batch_size]
+        output=self._saved_tensor[batch_size:]
+        ratio=output/input
+        return grad_output*(ratio+output*(1-ratio))
 
 # ../codes/layers.py:5
+        x=self.alpha*(input+self.beta*np.power(input,3))
+        y=1+np.tanh(x)
+        self._saved_for_backward(np.vstack((input,y,x)))
+        return 0.5*input*y
 
 # ../codes/layers.py:6
+        batch_size=grad_output.shape[0]
+        input=self._saved_tensor[:batch_size]
+        y=self._saved_tensor[batch_size:2*batch_size]
+        x=self._saved_tensor[2*batch_size:]
+        plus=2*np.cosh(x)
+        return grad_output*0.5*(y+input*(4/np.power(plus,2))*self.alpha*(1+3*self.beta*np.power(input,2)))
 
 # ../codes/layers.py:7
+        self._saved_for_backward(input)
+        return input@self.W+self.b
 
 # ../codes/layers.py:8
+        # grad_output (batch_size, out_dim), input (batch_size, in_dim)
+        input=self._saved_tensor
+        self.grad_W=np.matmul(input.T,grad_output)
+        self.grad_b=np.sum(grad_output,axis=0)
+        return grad_output@self.W.T
 
 
 ########################
@@ -52,8 +108,159 @@
 ########################
 # Other Modifications
 ########################
+# _codes/solve_net.py -> ../codes/solve_net.py
+# 20 +
+# 21 +     # for plotting the curve
+# 22 +     total_loss=[]
+# 23 +     total_acc=[]
+# 46 +             mean_loss=np.mean(loss_list)
+# 47 +             mean_acc=np.mean(acc_list)
+# 48 +             total_loss.append(mean_loss)
+# 49 +             total_acc.append(mean_acc)
+# 42 -             msg = '  Training iter %d, batch loss %.4f, batch acc %.4f' % (iter_counter, np.mean(loss_list), np.mean(acc_list))
+# 42 ?                                                                                          ---    ^    ------  ---    ^   ------
+# 50 +             msg = '  Training iter %d, batch loss %.4f, batch acc %.4f' % (iter_counter, mean_loss, mean_acc)
+# 50 ?                                                                                              ^          ^
+# 54 +
+# 55 +     return np.mean(total_loss),np.mean(total_acc)
+# 72 +
+# 73 +     return np.mean(loss_list),np.mean(acc_list)
+# _codes/run_mlp.py -> ../codes/run_mlp.py
+# 3 - from layers import Selu, Swish, Linear, Gelu
+# 3 + from layers import Selu, Swish, Linear, Gelu, Relu, Sigmoid
+# 3 ?                                             +++++++++++++++
+# 7 -
+# 7 + import numpy as np
+# 8 + import matplotlib.pyplot as plt
+# 9 + import argparse
+# 13 - model = Network()
+# 14 - model.add(Linear('fc1', 784, 10, 0.01))
+# 16 - loss = MSELoss(name='loss')
+# 16 + loss_map={
+# 17 +     'M':MSELoss,
+# 18 +     'S':SoftmaxCrossEntropyLoss,
+# 19 +     'H':HingeLoss,
+# 20 +     'F':FocalLoss
+# 21 + }
+# 22 +
+# 23 + activation_map={
+# 24 +     'R':Relu,
+# 25 +     'Si':Sigmoid,
+# 26 +     'Se':Selu,
+# 27 +     'Ge':Gelu,
+# 28 +     'Sw':Swish
+# 29 + }
+# 30 +
+# 31 + parser=argparse.ArgumentParser()
+# 32 + parser.add_argument('-n',type=int,choices=[1,2,3],default=1,help='number of layers')
+# 33 + parser.add_argument('-l',type=str,choices=['M','S','H','F'],default='M',help="loss function")
+# 34 + parser.add_argument('-a',type=str,choices=['R','Si','Se','Ge','Sw'],default='R',help="actiation function")
+# 35 +
+# 36 + args=parser.parse_args()
+# 37 +
+# 38 + def one_layer_net(args):
+# 39 +     model=Network()
+# 40 +     model.add(Linear('fc1', 784, 10, 0.01))
+# 41 +     model.add(activation_map[args.a](args.a))
+# 42 +     loss=loss_map[args.l]('loss')
+# 43 +     return model,loss
+# 44 +
+# 45 + def two_layers_net(args):
+# 46 +     model=Network()
+# 47 +     model.add(Linear('fc1', 784, 256, 0.01))
+# 48 +     model.add(activation_map[args.a](args.a))
+# 49 +     model.add(Linear('fc2', 256, 10, 0.01))
+# 50 +     model.add(activation_map[args.a](args.a))
+# 51 +     loss=loss_map[args.l]('loss')
+# 52 +     return model,loss
+# 53 +
+# 54 + def three_layers_net(args):
+# 55 +     model=Network()
+# 56 +     model.add(Linear('fc1', 784, 256, 0.01))
+# 57 +     model.add(activation_map[args.a](args.a))
+# 58 +     model.add(Linear('fc2', 256, 49, 0.01))
+# 59 +     model.add(activation_map[args.a](args.a))
+# 60 +     model.add(Linear('fc3', 49, 10, 0.01))
+# 61 +     model.add(activation_map[args.a](args.a))
+# 62 +     loss=loss_map[args.l]('loss')
+# 63 +     return model,loss
+# 64 +
+# 65 + net_map={
+# 66 +     1:one_layer_net,
+# 67 +     2:two_layers_net,
+# 68 +     3:three_layers_net
+# 69 + }
+# 25 -     'learning_rate': 0.0,
+# 78 +     'learning_rate': 0.01,
+# 78 ?                         +
+# 26 -     'weight_decay': 0.0,
+# 79 +     'weight_decay': 0.0007,
+# 79 ?                        +++
+# 27 -     'momentum': 0.0,
+# 27 ?                   ^
+# 80 +     'momentum': 0.9,
+# 80 ?                   ^
+# 30 -     'disp_freq': 50,
+# 30 ?                  ^
+# 83 +     'disp_freq': 200,
+# 83 ?                  ^^
+# 87 + model,loss=net_map[args.n](args)
+# 88 +
+# 89 + loss_train=[]
+# 90 + acc_train=[]
+# 91 + loss_test=[]
+# 92 + acc_test=[]
+# 93 + train_epochs=np.arange(0,config['max_epoch'])
+# 94 + test_epochs=[]
+# 37 -     train_net(model, loss, config, train_data, train_label, config['batch_size'], config['disp_freq'])
+# 98 +     train_metric=train_net(model, loss, config, train_data, train_label, config['batch_size'], config['disp_freq'])
+# 98 ?     +++++++++++++
+# 99 +     loss_train.append(train_metric[0])
+# 100 +     acc_train.append(train_metric[1])
+# 39 -     if epoch % config['test_epoch'] == 0:
+# 102 +     if (epoch+1) % config['test_epoch'] == 0:
+# 102 ?        +     +++
+# 41 -         test_net(model, loss, test_data, test_label, config['batch_size'])
+# 104 +         test_metric=test_net(model, loss, test_data, test_label, config['batch_size'])
+# 104 ?         ++++++++++++
+# 105 +         test_epochs.append(epoch)
+# 106 +         loss_test.append(test_metric[0])
+# 107 +         acc_test.append(test_metric[1])
+# 108 +
+# 109 + final_training=f"Final training loss: {loss_train[-1]}, final training acc: {acc_train[-1]}"
+# 110 + final_test=f"Final test loss: {loss_test[-1]}, final test acc: {acc_test[-1]}"
+# 111 +
+# 112 + print(final_training)
+# 113 + print(final_test)
+# 114 +
+# 115 + fig,axs=plt.subplots(2)
+# 116 +
+# 117 + axs[0].plot(train_epochs,loss_train,'-g',label='loss_train')
+# 118 + axs[0].plot(test_epochs,loss_test,':k',label='loss_test')
+# 119 + axs[0].set_xlabel('epoch')
+# 120 + axs[0].set_ylabel('loss')
+# 121 + axs[0].legend()
+# 122 +
+# 123 + axs[1].plot(train_epochs,acc_train,'-g',label='acc_train')
+# 124 + axs[1].plot(test_epochs,acc_test,':k',label='acc_test')
+# 125 + axs[1].set_xlabel('epoch')
+# 126 + axs[1].set_ylabel('acc')
+# 127 + axs[1].legend()
+# 128 +
+# 129 + plt.subplots_adjust(hspace=0.5)
+# 130 +
+# 131 + name=f"{args.n}_{args.a}_{args.l}"
+# 132 + fig.savefig(name+'_result.png')
+# 133 +
+# 134 + with open('results.txt','a') as f:
+# 135 +     f.write(name+'\n')
+# 136 +     f.write(final_training+'\n')
+# 137 +     f.write(final_test+'\n')
+# 138 +     f.write('\n')
 # _codes/layers.py -> ../codes/layers.py
 # 53 +         self.lbd=1.0507
 # 54 +         self.alpha=1.67326
 # 55 +         self.mul=self.lbd*self.alpha
+# 93 +         self.alpha=np.sqrt(2/np.pi)
+# 94 +         self.beta=0.044715
 
