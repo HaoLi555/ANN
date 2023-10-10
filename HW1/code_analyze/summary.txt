@@ -1,10 +1,7 @@
 ########################
 # Additional Files
 ########################
-# generate_sh.py
-# __pycache__
-# run_colab.ipynb
-# test_gpu_colab.ipynb
+# README.md
 
 ########################
 # Filled Code
@@ -108,27 +105,10 @@
 ########################
 # Other Modifications
 ########################
-# _codes/solve_net.py -> ../codes/solve_net.py
-# 20 +
-# 21 +     # for plotting the curve
-# 22 +     total_loss=[]
-# 23 +     total_acc=[]
-# 46 +             mean_loss=np.mean(loss_list)
-# 47 +             mean_acc=np.mean(acc_list)
-# 48 +             total_loss.append(mean_loss)
-# 49 +             total_acc.append(mean_acc)
-# 42 -             msg = '  Training iter %d, batch loss %.4f, batch acc %.4f' % (iter_counter, np.mean(loss_list), np.mean(acc_list))
-# 42 ?                                                                                          ---    ^    ------  ---    ^   ------
-# 50 +             msg = '  Training iter %d, batch loss %.4f, batch acc %.4f' % (iter_counter, mean_loss, mean_acc)
-# 50 ?                                                                                              ^          ^
-# 54 +
-# 55 +     return np.mean(total_loss),np.mean(total_acc)
-# 72 +
-# 73 +     return np.mean(loss_list),np.mean(acc_list)
 # _codes/run_mlp.py -> ../codes/run_mlp.py
 # 3 - from layers import Selu, Swish, Linear, Gelu
-# 3 + from layers import Selu, Swish, Linear, Gelu, Relu, Sigmoid
-# 3 ?                                             +++++++++++++++
+# 3 + from layers import Selu, Swish, Linear, Gelu, Relu, Sigmoid, Dropout
+# 3 ?                                             ++++++++++++++++++++++++
 # 7 -
 # 7 + import numpy as np
 # 8 + import matplotlib.pyplot as plt
@@ -155,112 +135,177 @@
 # 32 + parser.add_argument('-n',type=int,choices=[1,2,3],default=1,help='number of layers')
 # 33 + parser.add_argument('-l',type=str,choices=['M','S','H','F'],default='M',help="loss function")
 # 34 + parser.add_argument('-a',type=str,choices=['R','Si','Se','Ge','Sw'],default='R',help="actiation function")
-# 35 +
-# 36 + args=parser.parse_args()
-# 37 +
-# 38 + def one_layer_net(args):
-# 39 +     model=Network()
-# 40 +     model.add(Linear('fc1', 784, 10, 0.01))
-# 41 +     model.add(activation_map[args.a](args.a))
-# 42 +     loss=loss_map[args.l]('loss')
-# 43 +     return model,loss
-# 44 +
-# 45 + def two_layers_net(args):
-# 46 +     model=Network()
-# 47 +     model.add(Linear('fc1', 784, 256, 0.01))
-# 48 +     model.add(activation_map[args.a](args.a))
-# 49 +     model.add(Linear('fc2', 256, 10, 0.01))
-# 50 +     model.add(activation_map[args.a](args.a))
-# 51 +     loss=loss_map[args.l]('loss')
-# 52 +     return model,loss
-# 53 +
-# 54 + def three_layers_net(args):
-# 55 +     model=Network()
-# 56 +     model.add(Linear('fc1', 784, 256, 0.01))
-# 57 +     model.add(activation_map[args.a](args.a))
-# 58 +     model.add(Linear('fc2', 256, 49, 0.01))
-# 59 +     model.add(activation_map[args.a](args.a))
-# 60 +     model.add(Linear('fc3', 49, 10, 0.01))
-# 61 +     model.add(activation_map[args.a](args.a))
-# 62 +     loss=loss_map[args.l]('loss')
-# 63 +     return model,loss
-# 64 +
-# 65 + net_map={
-# 66 +     1:one_layer_net,
-# 67 +     2:two_layers_net,
-# 68 +     3:three_layers_net
-# 69 + }
+# 35 + parser.add_argument('-d',action="store_true",help="whether to use drop out layers")
+# 36 +
+# 37 + args=parser.parse_args()
+# 38 +
+# 39 + def one_layer_net(args):
+# 40 +     model=Network()
+# 41 +     model.add(Linear('fc1', 784, 10, 0.01))
+# 42 +     model.add(activation_map[args.a](args.a))
+# 43 +     loss=loss_map[args.l]('loss')
+# 44 +     return model,loss
+# 45 +
+# 46 + def two_layers_net(args):
+# 47 +     model=Network()
+# 48 +     model.add(Linear('fc1', 784, 256, 0.01))
+# 49 +     model.add(activation_map[args.a](args.a))
+# 50 +     if args.d:
+# 51 +         model.add(Dropout('dropout',dropout_prob=0.3))
+# 52 +     model.add(Linear('fc2', 256, 10, 0.01))
+# 53 +     model.add(activation_map[args.a](args.a))
+# 54 +     loss=loss_map[args.l]('loss')
+# 55 +     return model,loss
+# 56 +
+# 57 + def three_layers_net(args):
+# 58 +     model=Network()
+# 59 +     model.add(Linear('fc1', 784, 256, 0.01))
+# 60 +     model.add(activation_map[args.a](args.a))
+# 61 +     if args.d:
+# 62 +         model.add(Dropout('dropout',dropout_prob=0.3))
+# 63 +     model.add(Linear('fc2', 256, 49, 0.01))
+# 64 +     model.add(activation_map[args.a](args.a))
+# 65 +     if args.d:
+# 66 +         model.add(Dropout('dropout',dropout_prob=0.3))
+# 67 +     model.add(Linear('fc3', 49, 10, 0.01))
+# 68 +     model.add(activation_map[args.a](args.a))
+# 69 +     loss=loss_map[args.l]('loss')
+# 70 +     return model,loss
+# 71 +
+# 72 + net_map={
+# 73 +     1:one_layer_net,
+# 74 +     2:two_layers_net,
+# 75 +     3:three_layers_net
+# 76 + }
+# 84 + # one possible config example
 # 25 -     'learning_rate': 0.0,
-# 78 +     'learning_rate': 0.01,
-# 78 ?                         +
+# 86 +     'learning_rate': 0.01,
+# 86 ?                         +
 # 26 -     'weight_decay': 0.0,
-# 79 +     'weight_decay': 0.0007,
-# 79 ?                        +++
+# 87 +     'weight_decay': 0.0007,
+# 87 ?                        +++
 # 27 -     'momentum': 0.0,
 # 27 ?                   ^
-# 80 +     'momentum': 0.9,
-# 80 ?                   ^
+# 88 +     'momentum': 0.9,
+# 88 ?                   ^
 # 30 -     'disp_freq': 50,
 # 30 ?                  ^
-# 83 +     'disp_freq': 200,
-# 83 ?                  ^^
-# 87 + model,loss=net_map[args.n](args)
-# 88 +
-# 89 + loss_train=[]
-# 90 + acc_train=[]
-# 91 + loss_test=[]
-# 92 + acc_test=[]
-# 93 + train_epochs=np.arange(0,config['max_epoch'])
-# 94 + test_epochs=[]
+# 91 +     'disp_freq': 200,
+# 91 ?                  ^^
+# 96 + model,loss=net_map[args.n](args)
+# 97 +
+# 98 + loss_train=[]
+# 99 + acc_train=[]
+# 100 + loss_test=[]
+# 101 + acc_test=[]
+# 102 + train_epochs=np.arange(0,config['max_epoch'])
+# 103 + test_epochs=[]
+# 104 +
 # 37 -     train_net(model, loss, config, train_data, train_label, config['batch_size'], config['disp_freq'])
-# 98 +     train_metric=train_net(model, loss, config, train_data, train_label, config['batch_size'], config['disp_freq'])
-# 98 ?     +++++++++++++
-# 99 +     loss_train.append(train_metric[0])
-# 100 +     acc_train.append(train_metric[1])
+# 107 +     train_metric=train_net(model, loss, config, train_data, train_label, config['batch_size'], config['disp_freq'])
+# 107 ?     +++++++++++++
+# 108 +     loss_train.append(train_metric[0])
+# 109 +     acc_train.append(train_metric[1])
 # 39 -     if epoch % config['test_epoch'] == 0:
-# 102 +     if (epoch+1) % config['test_epoch'] == 0:
-# 102 ?        +     +++
+# 111 +     if (epoch+1) % config['test_epoch'] == 0:
+# 111 ?        +     +++
 # 41 -         test_net(model, loss, test_data, test_label, config['batch_size'])
-# 104 +         test_metric=test_net(model, loss, test_data, test_label, config['batch_size'])
-# 104 ?         ++++++++++++
-# 105 +         test_epochs.append(epoch)
-# 106 +         loss_test.append(test_metric[0])
-# 107 +         acc_test.append(test_metric[1])
-# 108 +
-# 109 + final_training=f"Final training loss: {loss_train[-1]}, final training acc: {acc_train[-1]}"
-# 110 + final_test=f"Final test loss: {loss_test[-1]}, final test acc: {acc_test[-1]}"
-# 111 +
-# 112 + print(final_training)
-# 113 + print(final_test)
-# 114 +
-# 115 + fig,axs=plt.subplots(2)
-# 116 +
-# 117 + axs[0].plot(train_epochs,loss_train,'-g',label='loss_train')
-# 118 + axs[0].plot(test_epochs,loss_test,':k',label='loss_test')
-# 119 + axs[0].set_xlabel('epoch')
-# 120 + axs[0].set_ylabel('loss')
-# 121 + axs[0].legend()
-# 122 +
-# 123 + axs[1].plot(train_epochs,acc_train,'-g',label='acc_train')
-# 124 + axs[1].plot(test_epochs,acc_test,':k',label='acc_test')
-# 125 + axs[1].set_xlabel('epoch')
-# 126 + axs[1].set_ylabel('acc')
-# 127 + axs[1].legend()
-# 128 +
-# 129 + plt.subplots_adjust(hspace=0.5)
-# 130 +
-# 131 + name=f"{args.n}_{args.a}_{args.l}"
-# 132 + fig.savefig(name+'_result.png')
-# 133 +
-# 134 + with open('results.txt','a') as f:
-# 135 +     f.write(name+'\n')
-# 136 +     f.write(final_training+'\n')
-# 137 +     f.write(final_test+'\n')
-# 138 +     f.write('\n')
+# 113 +         test_metric=test_net(model, loss, test_data, test_label, config['batch_size'])
+# 113 ?         ++++++++++++
+# 114 +         test_epochs.append(epoch)
+# 115 +         loss_test.append(test_metric[0])
+# 116 +         acc_test.append(test_metric[1])
+# 117 +
+# 118 + final_training=f"Final training loss: {loss_train[-1]}, final training acc: {acc_train[-1]}"
+# 119 + final_test=f"Final test loss: {loss_test[-1]}, final test acc: {acc_test[-1]}"
+# 120 +
+# 121 + print(final_training)
+# 122 + print(final_test)
+# 123 +
+# 124 + fig,axs=plt.subplots(2)
+# 125 +
+# 126 + axs[0].plot(train_epochs,loss_train,'-g',label='loss_train')
+# 127 + axs[0].plot(test_epochs,loss_test,':k',label='loss_test')
+# 128 + axs[0].set_xlabel('epoch')
+# 129 + axs[0].set_ylabel('loss')
+# 130 + axs[0].legend()
+# 131 +
+# 132 + axs[1].plot(train_epochs,acc_train,'-g',label='acc_train')
+# 133 + axs[1].plot(test_epochs,acc_test,':k',label='acc_test')
+# 134 + axs[1].set_xlabel('epoch')
+# 135 + axs[1].set_ylabel('acc')
+# 136 + axs[1].legend()
+# 137 +
+# 138 + plt.subplots_adjust(hspace=0.5)
+# 139 +
+# 140 + name=f"{args.n}_{args.a}_{args.l}"
+# 141 + if args.d:
+# 142 +     name+='_dropout'
+# 143 + fig.savefig(name+'_result.png')
+# 144 +
+# 145 + with open('results.txt','a') as f:
+# 146 +     f.write(name+'\n')
+# 147 +     f.write(final_training+'\n')
+# 148 +     f.write(final_test+'\n')
+# 149 +     f.write('\n')
+# _codes/network.py -> ../codes/network.py
+# 1 + from layers import Dropout
+# 2 +
+# 8 +         self.train=True
+# 17 +             if isinstance(self.layer_list[i],Dropout):
+# 18 +                 output=self.layer_list[i].forward(output,self.train)
+# 19 +             else:
+# 14 -             output = self.layer_list[i].forward(output)
+# 20 +                 output = self.layer_list[i].forward(output)
+# 20 ? ++++
+# 27 +             if isinstance(self.layer_list[i],Dropout):
+# 28 +                 grad_input = self.layer_list[i].backward(grad_input,self.train)
+# 29 +             else:
+# 21 -             grad_input = self.layer_list[i].backward(grad_input)
+# 30 +                 grad_input = self.layer_list[i].backward(grad_input)
+# 30 ? ++++
+# _codes/solve_net.py -> ../codes/solve_net.py
+# 16 +     model.train=True
+# 21 +
+# 22 +     # for plotting the curve
+# 23 +     total_loss=[]
+# 24 +     total_acc=[]
+# 47 +             mean_loss=np.mean(loss_list)
+# 48 +             mean_acc=np.mean(acc_list)
+# 49 +             total_loss.append(mean_loss)
+# 50 +             total_acc.append(mean_acc)
+# 42 -             msg = '  Training iter %d, batch loss %.4f, batch acc %.4f' % (iter_counter, np.mean(loss_list), np.mean(acc_list))
+# 42 ?                                                                                          ---    ^    ------  ---    ^   ------
+# 51 +             msg = '  Training iter %d, batch loss %.4f, batch acc %.4f' % (iter_counter, mean_loss, mean_acc)
+# 51 ?                                                                                              ^          ^
+# 56 +     return np.mean(total_loss),np.mean(total_acc)
+# 57 +
+# 60 +     model.train=False
+# 61 +
+# 75 +
+# 76 +     return np.mean(loss_list),np.mean(acc_list)
 # _codes/layers.py -> ../codes/layers.py
 # 53 +         self.lbd=1.0507
 # 54 +         self.alpha=1.67326
 # 55 +         self.mul=self.lbd*self.alpha
 # 93 +         self.alpha=np.sqrt(2/np.pi)
 # 94 +         self.beta=0.044715
+# 153 +
+# 154 +
+# 155 + class Dropout(Layer):
+# 156 +     def __init__(self, name, dropout_prob):
+# 157 +          super(Dropout, self).__init__(name, trainable=False)
+# 158 +          self.prob=dropout_prob
+# 159 +
+# 160 +     def forward(self, input, train):
+# 161 +          if not train:
+# 162 +               return input
+# 163 +          self.mask=np.random.binomial(1,1-self.prob,input.shape)
+# 164 +          # maintain the expectation
+# 165 +          return input*self.mask/(1-self.prob)
+# 166 +
+# 167 +     def backward(self, grad_output, train):
+# 168 +          if not train:
+# 169 +               return grad_output
+# 170 +          return self.mask*grad_output/(1-self.prob)
 
