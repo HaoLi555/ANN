@@ -1,6 +1,6 @@
 from network import Network
 from utils import LOG_INFO
-from layers import Selu, Swish, Linear, Gelu, Relu, Sigmoid
+from layers import Selu, Swish, Linear, Gelu, Relu, Sigmoid, Dropout
 from loss import MSELoss, SoftmaxCrossEntropyLoss, HingeLoss, FocalLoss
 from solve_net import train_net, test_net
 from load_data import load_mnist_2d
@@ -32,6 +32,7 @@ parser=argparse.ArgumentParser()
 parser.add_argument('-n',type=int,choices=[1,2,3],default=1,help='number of layers')
 parser.add_argument('-l',type=str,choices=['M','S','H','F'],default='M',help="loss function")
 parser.add_argument('-a',type=str,choices=['R','Si','Se','Ge','Sw'],default='R',help="actiation function")
+parser.add_argument('-d',action="store_true",help="whether to use drop out layers")
 
 args=parser.parse_args()
 
@@ -46,6 +47,8 @@ def two_layers_net(args):
     model=Network()
     model.add(Linear('fc1', 784, 256, 0.01))
     model.add(activation_map[args.a](args.a))
+    if args.d:
+        model.add(Dropout('dropout',False))
     model.add(Linear('fc2', 256, 10, 0.01))
     model.add(activation_map[args.a](args.a))
     loss=loss_map[args.l]('loss')
@@ -55,8 +58,12 @@ def three_layers_net(args):
     model=Network()
     model.add(Linear('fc1', 784, 256, 0.01))
     model.add(activation_map[args.a](args.a))
+    if args.d:
+        model.add(Dropout('dropout',False))
     model.add(Linear('fc2', 256, 49, 0.01))
     model.add(activation_map[args.a](args.a))
+    if args.d:
+        model.add(Dropout('dropout',False))
     model.add(Linear('fc3', 49, 10, 0.01))
     model.add(activation_map[args.a](args.a))
     loss=loss_map[args.l]('loss')
@@ -74,10 +81,20 @@ net_map={
 #       one epoch means model has gone through all the training samples.
 #       'disp_freq' denotes number of iterations in one epoch to display information.
 
+# config = {
+#     'learning_rate': 0.01,
+#     'weight_decay': 0.0007,
+#     'momentum': 0.9,
+#     'batch_size': 100,
+#     'max_epoch': 100,
+#     'disp_freq': 200,
+#     'test_epoch': 5
+# }
+
 config = {
-    'learning_rate': 0.01,
-    'weight_decay': 0.0007,
-    'momentum': 0.9,
+    'learning_rate': 13,
+    'weight_decay': 0.0,
+    'momentum': 0.05,
     'batch_size': 100,
     'max_epoch': 100,
     'disp_freq': 200,

@@ -150,3 +150,16 @@ class Linear(Layer):
 
         self.diff_b = mm * self.diff_b + (self.grad_b + wd * self.b)
         self.b = self.b - lr * self.diff_b
+
+
+class Dropout(Layer):
+    def init(self, name, prob):
+         super(Linear, self).__init__(name, trainable=False)
+         self.prob=prob
+
+    def forward(self, input):
+         self.mask=np.random.binomial(1,self.prob,input.shape)
+         return input*self.mask
+    
+    def backward(self, grad_output):
+         return self.mask*grad_output
