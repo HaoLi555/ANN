@@ -48,7 +48,7 @@ def two_layers_net(args):
     model.add(Linear('fc1', 784, 256, 0.01))
     model.add(activation_map[args.a](args.a))
     if args.d:
-        model.add(Dropout('dropout',False))
+        model.add(Dropout('dropout',dropout_prob=0.5))
     model.add(Linear('fc2', 256, 10, 0.01))
     model.add(activation_map[args.a](args.a))
     loss=loss_map[args.l]('loss')
@@ -59,11 +59,11 @@ def three_layers_net(args):
     model.add(Linear('fc1', 784, 256, 0.01))
     model.add(activation_map[args.a](args.a))
     if args.d:
-        model.add(Dropout('dropout',False))
+        model.add(Dropout('dropout',dropout_prob=0.5))
     model.add(Linear('fc2', 256, 49, 0.01))
     model.add(activation_map[args.a](args.a))
     if args.d:
-        model.add(Dropout('dropout',False))
+        model.add(Dropout('dropout',dropout_prob=0.5))
     model.add(Linear('fc3', 49, 10, 0.01))
     model.add(activation_map[args.a](args.a))
     loss=loss_map[args.l]('loss')

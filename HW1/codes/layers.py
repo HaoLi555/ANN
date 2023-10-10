@@ -153,13 +153,14 @@ class Linear(Layer):
 
 
 class Dropout(Layer):
-    def init(self, name, prob):
-         super(Linear, self).__init__(name, trainable=False)
-         self.prob=prob
+    def __init__(self, name, dropout_prob):
+         super(Dropout, self).__init__(name, trainable=False)
+         self.prob=dropout_prob
 
     def forward(self, input):
-         self.mask=np.random.binomial(1,self.prob,input.shape)
-         return input*self.mask
+         self.mask=np.random.binomial(1,1-self.prob,input.shape)
+         # maintain the expectation
+         return input*self.mask/(1-self.prob)
     
     def backward(self, grad_output):
-         return self.mask*grad_output
+         return self.mask*grad_output/(1-self.prob)
