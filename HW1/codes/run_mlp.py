@@ -146,6 +146,8 @@ axs[1].legend()
 plt.subplots_adjust(hspace=0.5)
 
 name=f"{args.n}_{args.a}_{args.l}"
+if args.d:
+    name+='_dropout'
 fig.savefig(name+'_result.png')
 
 with open('results.txt','a') as f:
