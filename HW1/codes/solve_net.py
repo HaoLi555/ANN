@@ -13,6 +13,7 @@ def data_iterator(x, y, batch_size, shuffle=True):
 
 
 def train_net(model, loss, config, inputs, labels, batch_size, disp_freq):
+    model.train=True
 
     iter_counter = 0
     loss_list = []
@@ -56,6 +57,8 @@ def train_net(model, loss, config, inputs, labels, batch_size, disp_freq):
 
 
 def test_net(model, loss, inputs, labels, batch_size):
+    model.train=False
+
     loss_list = []
     acc_list = []
 

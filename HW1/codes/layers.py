@@ -157,10 +157,14 @@ class Dropout(Layer):
          super(Dropout, self).__init__(name, trainable=False)
          self.prob=dropout_prob
 
-    def forward(self, input):
+    def forward(self, input, train):
+         if not train:
+              return input
          self.mask=np.random.binomial(1,1-self.prob,input.shape)
          # maintain the expectation
          return input*self.mask/(1-self.prob)
     
-    def backward(self, grad_output):
+    def backward(self, grad_output, train):
+         if not train:
+              return grad_output
          return self.mask*grad_output/(1-self.prob)
