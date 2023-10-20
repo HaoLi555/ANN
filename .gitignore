@@ -7,3 +7,5 @@ data/
 *.png
 
 ref/
+
+cifar-10-batches-py/

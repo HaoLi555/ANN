@@ -165,4 +165,3 @@ if __name__ == '__main__':
 			if result == y_test[i]:
 				count += 1
 		print("test accuracy: {}".format(float(count) / len(X_test)))
-nt) / len(X_test)))
