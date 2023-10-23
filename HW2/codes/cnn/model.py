@@ -50,8 +50,11 @@ class Dropout(nn.Module):
 
 	def forward(self, input):
 		# input: [batch_size, num_feature_map, height, width]
-		mask=torch.bernoulli(torch.zeros(input.shape[-2:]).to(input.device),1-self.p)/(1-self.p)
-		return mask*input
+		if self.train:
+			mask=torch.bernoulli(torch.zeros(input.shape[-2:]).to(input.device),1-self.p)/(1-self.p)
+			return mask*input
+		else:
+			return input
 	# TODO END
 
 class Model(nn.Module):
