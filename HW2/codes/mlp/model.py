@@ -9,7 +9,7 @@ from typing import OrderedDict
 
 class BatchNorm1d(nn.Module):
     # TODO START
-    def __init__(self, num_features, momentum=0.9):
+    def __init__(self, num_features, momentum=0.1):
         super(BatchNorm1d, self).__init__()
         self.num_features = num_features
         self.momentum = momentum

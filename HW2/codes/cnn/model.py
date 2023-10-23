@@ -7,7 +7,7 @@ from torch.nn.parameter import Parameter
 from typing import OrderedDict
 class BatchNorm2d(nn.Module):
 	# TODO START
-	def __init__(self, num_features, momentum=0.9):
+	def __init__(self, num_features, momentum=0.1):
 		super(BatchNorm2d, self).__init__()
 		self.num_features = num_features
 		self.momentum=momentum
