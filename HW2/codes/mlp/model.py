@@ -11,18 +11,23 @@ class BatchNorm1d(nn.Module):
 		self.num_features = num_features
 
 		# Parameters
-		self.weight = 
-		self.bias = 
+		self.weight = Parameter(torch.zeros(self.num_features))
+		self.bias = Parameter(torch.zeros(self.num_features))
 
 		# Store the average mean and variance
 		self.register_buffer('running_mean', )
 		self.register_buffer('running_var', )
 		
 		# Initialize your parameter
+		init.normal_(self.weight,0.0,1.0)
+		init.normal_(self.bias,0.0,1.0)
 
 	def forward(self, input):
 		# input: [batch_size, num_feature_map * height * width]
-		return input
+		mean=torch.mean(input=input,dim=0)
+		var=torch.var(input=input, dim=0)
+		std_deviation=torch.sqrt(var+1e-10)
+		return ((input-mean)/std_deviation)*self.weight+self.bias
 	# TODO END
 
 class Dropout(nn.Module):
@@ -41,13 +46,19 @@ class Model(nn.Module):
 		super(Model, self).__init__()
 		# TODO START
 		# Define your layers here
+		self.model=nn.Sequential(
+			('fc1',nn.Linear(3*32*32, 4096)),
+			('bn',BatchNorm1d(4096)),
+			('relu',nn.ReLU()),
+			('fc2',nn.Linear(4096,10))
+		)
 		# TODO END
 		self.loss = nn.CrossEntropyLoss()
 
 	def forward(self, x, y=None):
 		# TODO START
 		# the 10-class prediction output is named as "logits"
-		logits = 
+		logits = self.model(x)
 		# TODO END
 
 		pred = torch.argmax(logits, 1)  # Calculate the prediction result
