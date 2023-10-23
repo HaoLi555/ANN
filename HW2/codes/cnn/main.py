@@ -10,7 +10,7 @@ import torch.nn as nn
 import torch.optim as optim
 
 from model import Model
-from load_data import load_cifar_2d
+from load_data import load_cifar_4d
 
 parser = argparse.ArgumentParser()
 
@@ -102,10 +102,10 @@ if __name__ == '__main__':
 	if not os.path.exists(args.train_dir):
 		os.mkdir(args.train_dir)
 	if args.is_train:
-		X_train, X_test, y_train, y_test = load_cifar_2d(args.data_dir)
+		X_train, X_test, y_train, y_test = load_cifar_4d(args.data_dir)
 		X_val, y_val = X_train[40000:], y_train[40000:]
 		X_train, y_train = X_train[:40000], y_train[:40000]
-		mlp_model = Model(drop_rate=drop_rate)
+		mlp_model = Model(drop_rate=args.drop_rate)
 		mlp_model.to(device)
 		print(mlp_model)
 		optimizer = optim.Adam(mlp_model.parameters(), lr=args.learning_rate)
@@ -156,7 +156,7 @@ if __name__ == '__main__':
 		if os.path.exists(model_path):
 			mlp_model = torch.load(model_path)
 
-		X_train, X_test, y_train, y_test = load_cifar_2d(args.data_dir)
+		X_train, X_test, y_train, y_test = load_cifar_4d(args.data_dir)
 
 		count = 0
 		for i in range(len(X_test)):
