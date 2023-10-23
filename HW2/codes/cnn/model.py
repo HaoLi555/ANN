@@ -36,10 +36,10 @@ class BatchNorm2d(nn.Module):
                 self.running_var+self.momentum*var
 			
 			std_deviation=torch.sqrt(var+1e-10)
-			return (input-mean)/std_deviation*self.weight[:,None,None]+self.bias[:,None,None]
+			return (input-mean[:,None,None])/std_deviation[:,None,None]*self.weight[:,None,None]+self.bias[:,None,None]
 		else:
 			std_deviation=torch.sqrt(self.running_var+1e-10)
-			return (input-self.running_mean)/std_deviation*self.weight[:,None,None]+self.bias[:,None,None]
+			return (input-self.running_mean[:,None,None])/std_deviation[:,None,None]*self.weight[:,None,None]+self.bias[:,None,None]
 	# TODO END
 
 class Dropout(nn.Module):
