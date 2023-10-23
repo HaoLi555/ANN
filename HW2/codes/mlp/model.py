@@ -6,28 +6,38 @@ from torch.nn import init
 from torch.nn.parameter import Parameter
 class BatchNorm1d(nn.Module):
 	# TODO START
-	def __init__(self, num_features):
+	def __init__(self, num_features, momentum=0.9):
 		super(BatchNorm1d, self).__init__()
 		self.num_features = num_features
+		self.momentum=momentum
 
 		# Parameters
 		self.weight = Parameter(torch.zeros(self.num_features))
 		self.bias = Parameter(torch.zeros(self.num_features))
 
 		# Store the average mean and variance
-		self.register_buffer('running_mean', )
-		self.register_buffer('running_var', )
+		self.register_buffer('running_mean', torch.zeros(num_features))
+		self.register_buffer('running_var', torch.ones(num_features))
 		
 		# Initialize your parameter
-		init.normal_(self.weight,0.0,1.0)
-		init.normal_(self.bias,0.0,1.0)
+		init.ones_(self.weight)
+		init.zeros_(self.bias)
 
 	def forward(self, input):
 		# input: [batch_size, num_feature_map * height * width]
-		mean=torch.mean(input=input,dim=0)
-		var=torch.var(input=input, dim=0)
-		std_deviation=torch.sqrt(var+1e-10)
-		return ((input-mean)/std_deviation)*self.weight+self.bias
+		if self.train:
+			mean=torch.mean(input=input,dim=0)
+			var=torch.var(input=input, dim=0)
+
+			self.running_mean=(1-self.momentum)*self.running_mean+self.momentum*mean
+			self.running_var=(1-self.momentum)*self.running_var+self.momentum*var
+
+			std_deviation=torch.sqrt(var+1e-10)
+			return ((input-mean)/std_deviation)*self.weight+self.bias
+		else:
+			std_deviation=torch.sqrt(self.running_var+1e-10)
+			return ((input-self.running_mean)/std_deviation)*self.weight+self.bias
+	
 	# TODO END
 
 class Dropout(nn.Module):
