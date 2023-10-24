@@ -31,12 +31,14 @@ parser.add_argument('--train_dir', type=str, default='./train',
 	help='Training directory for saving model. Default: ./train')
 parser.add_argument('--inference_version', type=int, default=0,
 	help='The version for inference. Set 0 to use latest checkpoint. Default: 0')
-parser.add_argument('--weight_decay',type=float,default=1e-3,
-	help='Weight decay during optimization. Default: 1e-3')
 parser.add_argument('--project_name',type=str,default='ANN_HW2',
 	help='Project name in wandb. Default: ANN_HW2')
 parser.add_argument('--run_name',type=str,default='random_run',
 	help='Display name for this run in wandb. Default: random_run')
+parser.add_argument('--no_dropout',default=False,action='store_true',
+	help='Whether to abandon dropout lays')
+parser.add_argument('--no_bn',default=False,action='store_true',
+	help='Whether to abandon Batch Normalization lays')
 args = parser.parse_args()
 
 wandb.init(project=args.project_name,name=args.run_name)
@@ -46,7 +48,6 @@ config.batch_size=args.batch_size
 config.num_epochs=args.num_epochs
 config.learning_rate=args.learning_rate
 config.drop_rate=args.drop_rate
-config.weight_decay=args.weight_decay
 
 def shuffle(X, y, shuffle_parts):
 	chunk_size = int(len(X) / shuffle_parts)
@@ -120,10 +121,10 @@ if __name__ == '__main__':
 		X_train, X_test, y_train, y_test = load_cifar_4d(args.data_dir)
 		X_val, y_val = X_train[40000:], y_train[40000:]
 		X_train, y_train = X_train[:40000], y_train[:40000]
-		mlp_model = Model(drop_rate=args.drop_rate)
+		mlp_model = Model(args=args,drop_rate=args.drop_rate)
 		mlp_model.to(device)
 		print(mlp_model)
-		optimizer = optim.Adam(mlp_model.parameters(), lr=args.learning_rate, weight_decay=args.weight_decay)
+		optimizer = optim.Adam(mlp_model.parameters(), lr=args.learning_rate)
 
 		# model_path = os.path.join(args.train_dir, 'checkpoint_%d.pth.tar' % args.inference_version)
 		# if os.path.exists(model_path):

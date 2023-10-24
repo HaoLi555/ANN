@@ -26,7 +26,7 @@ class BatchNorm1d(nn.Module):
 
     def forward(self, input):
         # input: [batch_size, num_feature_map * height * width]
-        if self.train:
+        if self.training:
             mean = torch.mean(input=input, dim=0)
             var = torch.var(input=input, dim=0)
 
@@ -50,7 +50,7 @@ class Dropout(nn.Module):
 
     def forward(self, input):
         # input: [batch_size, num_feature_map * height * width]
-        if self.train:         
+        if self.training:         
             mask=torch.bernoulli(torch.zeros(input.shape,device=input.device), 1-self.p)/(1-self.p)
             return input*mask
         else:
@@ -60,15 +60,15 @@ class Dropout(nn.Module):
 
 
 class Model(nn.Module):
-    def __init__(self, drop_rate=0.5):
+    def __init__(self, args,drop_rate=0.5):
         super(Model, self).__init__()
         # TODO START
         # Define your layers here
         self.model = nn.Sequential(OrderedDict([
             ('fc1', nn.Linear(3*32*32, 1024)),
-            ('bn', BatchNorm1d(1024)),
+            ('bn', BatchNorm1d(1024)) if not args.no_bn else ('none',nn.Identity()),
             ('relu', nn.ReLU()),
-            ('dropout',Dropout(drop_rate)),
+            ('dropout',Dropout(drop_rate)) if not args.no_dropout else ('none',nn.Identity()),
             ('fc2', nn.Linear(1024, 10))
         ]))
         # TODO END

@@ -26,7 +26,7 @@ class BatchNorm2d(nn.Module):
 
 	def forward(self, input):
 		# input: [batch_size, num_feature_map, height, width]
-		if self.train:
+		if self.training:
 			mean=torch.mean(input=input, dim=(0,2,3))
 			var=torch.var(input=input, dim=(0,2,3))
 
@@ -50,31 +50,31 @@ class Dropout(nn.Module):
 
 	def forward(self, input):
 		# input: [batch_size, num_feature_map, height, width]
-		if self.train:
-			mask=torch.bernoulli(torch.zeros(input.shape[-2:]).to(input.device),1-self.p)/(1-self.p)
+		if self.training:
+			mask=torch.bernoulli(torch.zeros(input.shape[-2:],device=input.device),1-self.p)/(1-self.p)
 			return mask*input
 		else:
 			return input
 	# TODO END
 
 class Model(nn.Module):
-	def __init__(self, drop_rate=0.5):
+	def __init__(self, args, drop_rate=0.5):
 		super(Model, self).__init__()
 		# TODO START
 		# Define your layers here
 		self.model=nn.Sequential(OrderedDict([
-			('conv1',nn.Conv2d(3,32,kernel_size=3,padding=1)),
-			('bn1',BatchNorm2d(32)),
+			('conv1',nn.Conv2d(3,256,kernel_size=5,padding=2)),
+			('bn1',BatchNorm2d(256)) if not args.no_bn else ('none',nn.Identity()),
 			('relu1',nn.ReLU()),
-			('dropout1',Dropout()),
-			('mp1',nn.MaxPool2d(kernel_size=(2,2))),
-			('conv2',nn.Conv2d(32,64,kernel_size=3,padding=1)),
-			('bn',BatchNorm2d(64)),
+			('dropout1',Dropout()) if not args.no_dropout else ('none',nn.Identity()),
+			('mp1',nn.MaxPool2d(kernel_size=(5,5),padding=(2,2),stride=(3,3))),
+			('conv2',nn.Conv2d(256,256,kernel_size=7,padding=3)),
+			('bn',BatchNorm2d(256)) if not args.no_bn else ('none',nn.Identity()),
 			('relu2',nn.ReLU()),
-			('dropout2',Dropout()),
-			('mp2',nn.MaxPool2d(kernel_size=(2,2))),
+			('dropout2',Dropout()) if not args.no_dropout else ('none',nn.Identity()),
+			('mp2',nn.MaxPool2d(kernel_size=(5,5),padding=(2,2),stride=(4,4))),
 		]))
-		self.fc=nn.Linear(64*8*8,10)
+		self.fc=nn.Linear(256*3*3,10)
 		# TODO END
 		self.loss = nn.CrossEntropyLoss()
 
