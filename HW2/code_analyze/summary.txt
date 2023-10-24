@@ -1,48 +1,11 @@
 ########################
+# Additional Files
+########################
+# README.md
+
+########################
 # Filled Code
 ########################
-# ../codes/mlp/model.py:1
-    def __init__(self, num_features, momentum=0.1):
-        self.momentum = momentum
-        self.weight = Parameter(torch.ones(self.num_features))
-        self.bias = Parameter(torch.zeros(self.num_features))
-        self.register_buffer('running_mean', torch.zeros(num_features))
-        self.register_buffer('running_var', torch.ones(num_features))
-
-        if self.training:
-            mean = torch.mean(input=input, dim=0)
-            var = torch.var(input=input, dim=0)
-
-            self.running_mean = (1-self.momentum) *self.running_mean+self.momentum*mean
-            self.running_var = (1-self.momentum) *self.running_var+self.momentum*var
-
-            std_deviation = torch.sqrt(var+1e-10)
-            return ((input-mean)/std_deviation)*self.weight+self.bias
-        else:
-            std_deviation = torch.sqrt(self.running_var+1e-10)
-            return ((input-self.running_mean)/std_deviation)*self.weight+self.bias
-
-
-# ../codes/mlp/model.py:2
-        if self.training:
-            mask=torch.bernoulli(torch.zeros(input.shape,device=input.device), 1-self.p)/(1-self.p)
-            return input*mask
-        else:
-            return input
-
-
-# ../codes/mlp/model.py:3
-        self.model = nn.Sequential(OrderedDict([
-            ('fc1', nn.Linear(3*32*32, 1024)),
-            ('bn', BatchNorm1d(1024)) if not args.no_bn else ('none',nn.Identity()),
-            ('relu', nn.ReLU()),
-            ('dropout',Dropout(drop_rate)) if not args.no_dropout else ('none',nn.Identity()),
-            ('fc2', nn.Linear(1024, 10))
-        ]))
-
-# ../codes/mlp/model.py:4
-        logits = self.model(x)
-
 # ../codes/cnn/model.py:1
     def __init__(self, num_features, momentum=0.1):
         super(BatchNorm2d, self).__init__()
@@ -96,6 +59,48 @@
         temp=self.model(x)
         logits = self.fc(torch.reshape(temp,(x.shape[0],-1)))
 
+# ../codes/mlp/model.py:1
+    def __init__(self, num_features, momentum=0.1):
+        self.momentum = momentum
+        self.weight = Parameter(torch.ones(self.num_features))
+        self.bias = Parameter(torch.zeros(self.num_features))
+        self.register_buffer('running_mean', torch.zeros(num_features))
+        self.register_buffer('running_var', torch.ones(num_features))
+
+        if self.training:
+            mean = torch.mean(input=input, dim=0)
+            var = torch.var(input=input, dim=0)
+
+            self.running_mean = (1-self.momentum) *self.running_mean+self.momentum*mean
+            self.running_var = (1-self.momentum) *self.running_var+self.momentum*var
+
+            std_deviation = torch.sqrt(var+1e-10)
+            return ((input-mean)/std_deviation)*self.weight+self.bias
+        else:
+            std_deviation = torch.sqrt(self.running_var+1e-10)
+            return ((input-self.running_mean)/std_deviation)*self.weight+self.bias
+
+
+# ../codes/mlp/model.py:2
+        if self.training:
+            mask=torch.bernoulli(torch.zeros(input.shape,device=input.device), 1-self.p)/(1-self.p)
+            return input*mask
+        else:
+            return input
+
+
+# ../codes/mlp/model.py:3
+        self.model = nn.Sequential(OrderedDict([
+            ('fc1', nn.Linear(3*32*32, 1024)),
+            ('bn', BatchNorm1d(1024)) if not args.no_bn else ('none',nn.Identity()),
+            ('relu', nn.ReLU()),
+            ('dropout',Dropout(drop_rate)) if not args.no_dropout else ('none',nn.Identity()),
+            ('fc2', nn.Linear(1024, 10))
+        ]))
+
+# ../codes/mlp/model.py:4
+        logits = self.model(x)
+
 
 ########################
 # References
@@ -104,60 +109,6 @@
 ########################
 # Other Modifications
 ########################
-# _codes/mlp/main.py -> ../codes/mlp/main.py
-# 14 + import wandb
-# 34 + parser.add_argument('--project_name',type=str,default='ANN_HW2',
-# 35 +     help='Project name in wandb. Default: ANN_HW2')
-# 36 + parser.add_argument('--run_name',type=str,default='random_run',
-# 37 +     help='Display name for this run in wandb. Default: random_run')
-# 38 + parser.add_argument('--no_dropout',default=False,action='store_true',
-# 39 +     help='Whether to abandon dropout lays')
-# 40 + parser.add_argument('--no_bn',default=False,action='store_true',
-# 41 +     help='Whether to abandon Batch Normalization lays')
-# 44 +
-# 45 + wandb.init(project=args.project_name,name=args.run_name)
-# 46 +
-# 47 + config=wandb.config
-# 48 + config.batch_size=args.batch_size
-# 49 + config.num_epochs=args.num_epochs
-# 50 + config.learning_rate=args.learning_rate
-# 51 + config.drop_rate=args.drop_rate
-# 108 -         mlp_model = Model(drop_rate=drop_rate)
-# 125 +         mlp_model = Model(args=args,drop_rate=args.drop_rate)
-# 125 ?                           ++++++++++          +++++
-# 126 +
-# 127 +         wandb.watch(mlp_model)
-# 128 +
-# 111 -         optimizer = optim.Adam(mlp_model.parameters(), lr=args.learning_rate)
-# 131 +         optimizer = optim.AdamW(mlp_model.parameters(), lr=args.learning_rate)
-# 131 ?                               +
-# 154 +
-# 155 +                 wandb.log({
-# 156 +                     'test_acc':test_acc,
-# 157 +                     'test_loss':test_loss
-# 158 +                 },step=epoch)
-# 172 +
-# 177 +
-# 178 +             wandb.log({
-# 179 +                 'train_acc':train_acc,
-# 180 +                 'train_loss':train_loss,
-# 181 +                 'val_acc':val_acc,
-# 182 +                 'val_loss':val_loss,
-# 183 +                 'time_spent':epoch_time,
-# 184 +                 'lr':optimizer.param_groups[0]['lr']
-# 185 +             },step=epoch)
-# _codes/mlp/model.py -> ../codes/mlp/model.py
-# 7 + from typing import OrderedDict
-# 8 +
-# 9 +
-# 43 +
-# 61 +
-# 40 -     def __init__(self, drop_rate=0.5):
-# 63 +     def __init__(self, args,drop_rate=0.5):
-# 63 ?                        +++++
-# 58 -         acc = torch.mean(correct_pred.float())  # Calculate the accuracy in this mini-batch
-# 88 +         # Calculate the accuracy in this mini-batch
-# 89 +         acc = torch.mean(correct_pred.float())
 # _codes/cnn/main.py -> ../codes/cnn/main.py
 # 14 + import wandb
 # 34 + parser.add_argument('--project_name',type=str,default='ANN_HW2',
@@ -222,4 +173,58 @@
 # 47 -     def forward(self, x, y=None):
 # 81 +     def forward(self, x, y=None):
 # 81 ?                                  +
+# _codes/mlp/main.py -> ../codes/mlp/main.py
+# 14 + import wandb
+# 34 + parser.add_argument('--project_name',type=str,default='ANN_HW2',
+# 35 +     help='Project name in wandb. Default: ANN_HW2')
+# 36 + parser.add_argument('--run_name',type=str,default='random_run',
+# 37 +     help='Display name for this run in wandb. Default: random_run')
+# 38 + parser.add_argument('--no_dropout',default=False,action='store_true',
+# 39 +     help='Whether to abandon dropout lays')
+# 40 + parser.add_argument('--no_bn',default=False,action='store_true',
+# 41 +     help='Whether to abandon Batch Normalization lays')
+# 44 +
+# 45 + wandb.init(project=args.project_name,name=args.run_name)
+# 46 +
+# 47 + config=wandb.config
+# 48 + config.batch_size=args.batch_size
+# 49 + config.num_epochs=args.num_epochs
+# 50 + config.learning_rate=args.learning_rate
+# 51 + config.drop_rate=args.drop_rate
+# 108 -         mlp_model = Model(drop_rate=drop_rate)
+# 125 +         mlp_model = Model(args=args,drop_rate=args.drop_rate)
+# 125 ?                           ++++++++++          +++++
+# 126 +
+# 127 +         wandb.watch(mlp_model)
+# 128 +
+# 111 -         optimizer = optim.Adam(mlp_model.parameters(), lr=args.learning_rate)
+# 131 +         optimizer = optim.AdamW(mlp_model.parameters(), lr=args.learning_rate)
+# 131 ?                               +
+# 154 +
+# 155 +                 wandb.log({
+# 156 +                     'test_acc':test_acc,
+# 157 +                     'test_loss':test_loss
+# 158 +                 },step=epoch)
+# 172 +
+# 177 +
+# 178 +             wandb.log({
+# 179 +                 'train_acc':train_acc,
+# 180 +                 'train_loss':train_loss,
+# 181 +                 'val_acc':val_acc,
+# 182 +                 'val_loss':val_loss,
+# 183 +                 'time_spent':epoch_time,
+# 184 +                 'lr':optimizer.param_groups[0]['lr']
+# 185 +             },step=epoch)
+# _codes/mlp/model.py -> ../codes/mlp/model.py
+# 7 + from typing import OrderedDict
+# 8 +
+# 9 +
+# 43 +
+# 61 +
+# 40 -     def __init__(self, drop_rate=0.5):
+# 63 +     def __init__(self, args,drop_rate=0.5):
+# 63 ?                        +++++
+# 58 -         acc = torch.mean(correct_pred.float())  # Calculate the accuracy in this mini-batch
+# 88 +         # Calculate the accuracy in this mini-batch
+# 89 +         acc = torch.mean(correct_pred.float())
 
