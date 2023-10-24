@@ -15,7 +15,7 @@ class BatchNorm1d(nn.Module):
         self.momentum = momentum
 
         # Parameters
-        self.weight = Parameter(torch.zeros(self.num_features))
+        self.weight = Parameter(torch.ones(self.num_features))
         self.bias = Parameter(torch.zeros(self.num_features))
 
         # Store the average mean and variance
@@ -23,8 +23,6 @@ class BatchNorm1d(nn.Module):
         self.register_buffer('running_var', torch.ones(num_features))
 
         # Initialize your parameter
-        init.ones_(self.weight)
-        init.zeros_(self.bias)
 
     def forward(self, input):
         # input: [batch_size, num_feature_map * height * width]
@@ -32,10 +30,8 @@ class BatchNorm1d(nn.Module):
             mean = torch.mean(input=input, dim=0)
             var = torch.var(input=input, dim=0)
 
-            self.running_mean = (1-self.momentum) * \
-                self.running_mean+self.momentum*mean
-            self.running_var = (1-self.momentum) * \
-                self.running_var+self.momentum*var
+            self.running_mean = (1-self.momentum) *self.running_mean+self.momentum*mean
+            self.running_var = (1-self.momentum) *self.running_var+self.momentum*var
 
             std_deviation = torch.sqrt(var+1e-10)
             return ((input-mean)/std_deviation)*self.weight+self.bias
@@ -55,7 +51,7 @@ class Dropout(nn.Module):
     def forward(self, input):
         # input: [batch_size, num_feature_map * height * width]
         if self.train:         
-            mask=torch.bernoulli(torch.zeros(input.shape).to(input.device), 1-self.p)/(1-self.p)
+            mask=torch.bernoulli(torch.zeros(input.shape,device=input.device), 1-self.p)/(1-self.p)
             return input*mask
         else:
             return input
@@ -69,11 +65,11 @@ class Model(nn.Module):
         # TODO START
         # Define your layers here
         self.model = nn.Sequential(OrderedDict([
-            ('fc1', nn.Linear(3*32*32, 4096)),
-            ('bn', BatchNorm1d(4096)),
+            ('fc1', nn.Linear(3*32*32, 1024)),
+            ('bn', BatchNorm1d(1024)),
             ('relu', nn.ReLU()),
             ('dropout',Dropout(drop_rate)),
-            ('fc2', nn.Linear(4096, 10))
+            ('fc2', nn.Linear(1024, 10))
         ]))
         # TODO END
         self.loss = nn.CrossEntropyLoss()

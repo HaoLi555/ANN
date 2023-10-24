@@ -11,6 +11,7 @@ import torch.optim as optim
 
 from model import Model
 from load_data import load_cifar_2d
+import wandb
 
 parser = argparse.ArgumentParser()
 
@@ -30,8 +31,23 @@ parser.add_argument('--train_dir', type=str, default='./train',
 	help='Training directory for saving model. Default: ./train')
 parser.add_argument('--inference_version', type=int, default=0,
 	help='The version for inference. Set 0 to use latest checkpoint. Default: 0')
+parser.add_argument('--weight_decay',type=float,default=0,
+	help='Weight decay during optimization. Default: 1e-3')
+parser.add_argument('--project_name',type=str,default='ANN_HW2',
+	help='Project name in wandb. Default: ANN_HW2')
+parser.add_argument('--run_name',type=str,default='random_run',
+	help='Display name for this run in wandb. Default: random_run')
 args = parser.parse_args()
 
+
+wandb.init(project=args.project_name,name=args.run_name)
+
+config=wandb.config
+config.batch_size=args.batch_size
+config.num_epochs=args.num_epochs
+config.learning_rate=args.learning_rate
+config.drop_rate=args.drop_rate
+config.weight_decay=args.weight_decay
 
 def shuffle(X, y, shuffle_parts):
 	chunk_size = int(len(X) / shuffle_parts)
@@ -106,9 +122,12 @@ if __name__ == '__main__':
 		X_val, y_val = X_train[40000:], y_train[40000:]
 		X_train, y_train = X_train[:40000], y_train[:40000]
 		mlp_model = Model(drop_rate=args.drop_rate)
+
+		wandb.watch(mlp_model)
+
 		mlp_model.to(device)
 		print(mlp_model)
-		optimizer = optim.Adam(mlp_model.parameters(), lr=args.learning_rate)
+		optimizer = optim.AdamW(mlp_model.parameters(), lr=args.learning_rate,weight_decay=args.weight_decay)
 
 		# model_path = os.path.join(args.train_dir, 'checkpoint_%d.pth.tar' % args.inference_version)
 		# if os.path.exists(model_path):
@@ -132,6 +151,11 @@ if __name__ == '__main__':
 				# with open(os.path.join(args.train_dir, 'checkpoint_0.pth.tar'), 'wb') as fout:
 				# 	torch.save(mlp_model, fout)
 
+				wandb.log({
+					'test_acc':test_acc,
+					'test_loss':test_loss
+				},step=epoch)
+
 			epoch_time = time.time() - start_time
 			print("Epoch " + str(epoch) + " of " + str(args.num_epochs) + " took " + str(epoch_time) + "s")
 			print("  learning rate:                 " + str(optimizer.param_groups[0]['lr']))
@@ -144,10 +168,20 @@ if __name__ == '__main__':
 			print("  test loss:                     " + str(test_loss))
 			print("  test accuracy:                 " + str(test_acc))
 
+
 			if train_loss > max(pre_losses):
 				for param_group in optimizer.param_groups:
 					param_group['lr'] = param_group['lr'] * 0.9995
 			pre_losses = pre_losses[1:] + [train_loss]
+
+			wandb.log({
+				'train_acc':train_acc,
+				'train_loss':train_loss,
+				'val_acc':val_acc,
+				'val_loss':val_loss,
+				'time_spent':epoch_time,
+				'lr':optimizer.param_groups[0]['lr']
+			},step=epoch)
 
 	else:
 		mlp_model = Model()

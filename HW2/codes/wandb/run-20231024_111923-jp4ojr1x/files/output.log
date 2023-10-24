@@ -1,0 +1,176 @@
+Model(
+  (model): Sequential(
+    (fc1): Linear(in_features=3072, out_features=1024, bias=True)
+    (bn): BatchNorm1d()
+    (relu): ReLU()
+    (dropout): Dropout()
+    (fc2): Linear(in_features=1024, out_features=10, bias=True)
+  )
+  (loss): CrossEntropyLoss()
+)
+Epoch 1 of 100 took 1.886423110961914s
+  learning rate:                 0.001
+  training loss:                 1.7873080369830132
+  training accuracy:             0.3717749913036823
+  validation loss:               1.7045927274227142
+  validation accuracy:           0.40329999059438704
+  best epoch:                    1
+  best validation accuracy:      0.40329999059438704
+  test loss:                     1.6830436182022095
+  test accuracy:                 0.4050999900698662
+Epoch 2 of 100 took 1.8420588970184326s
+  learning rate:                 0.001
+  training loss:                 1.6468236827850342
+  training accuracy:             0.41834998995065686
+  validation loss:               1.6525745368003846
+  validation accuracy:           0.4198999896645546
+  best epoch:                    2
+  best validation accuracy:      0.4198999896645546
+  test loss:                     1.6291640424728393
+  test accuracy:                 0.42429998934268953
+Epoch 3 of 100 took 1.658620834350586s
+  learning rate:                 0.001
+  training loss:                 1.5916652405261993
+  training accuracy:             0.44049998819828035
+  validation loss:               1.6113709914684295
+  validation accuracy:           0.4367999881505966
+  best epoch:                    3
+  best validation accuracy:      0.4367999881505966
+  test loss:                     1.5881398499011994
+  test accuracy:                 0.44089998960494997
+Epoch 4 of 100 took 1.5914831161499023s
+  learning rate:                 0.001
+  training loss:                 1.541494205892086
+  training accuracy:             0.4588499878719449
+  validation loss:               1.5843617498874665
+  validation accuracy:           0.4410999882221222
+  best epoch:                    4
+  best validation accuracy:      0.4410999882221222
+  test loss:                     1.562018676996231
+  test accuracy:                 0.4498999896645546
+Epoch 5 of 100 took 2.0102956295013428s
+  learning rate:                 0.001
+  training loss:                 1.5079440879821777
+  training accuracy:             0.4727249874919653
+  validation loss:               1.5614789021015167
+  validation accuracy:           0.45679998815059664
+  best epoch:                    5
+  best validation accuracy:      0.45679998815059664
+  test loss:                     1.5337274992465972
+  test accuracy:                 0.46509998619556425
+Epoch 6 of 100 took 1.5526769161224365s
+  learning rate:                 0.001
+  training loss:                 1.4699274009466172
+  training accuracy:             0.48617498867213726
+  validation loss:               1.54650111079216
+  validation accuracy:           0.45689998954534533
+  best epoch:                    6
+  best validation accuracy:      0.45689998954534533
+  test loss:                     1.535284835100174
+  test accuracy:                 0.4616999888420105
+Epoch 7 of 100 took 1.6844027042388916s
+  learning rate:                 0.001
+  training loss:                 1.4400371718406677
+  training accuracy:             0.4979249869287014
+  validation loss:               1.5268935823440553
+  validation accuracy:           0.4730999872088432
+  best epoch:                    7
+  best validation accuracy:      0.4730999872088432
+  test loss:                     1.5147934246063233
+  test accuracy:                 0.4714999866485596
+Epoch 8 of 100 took 1.672976016998291s
+  learning rate:                 0.001
+  training loss:                 1.4133482331037521
+  training accuracy:             0.505624986961484
+  validation loss:               1.545749272108078
+  validation accuracy:           0.46979998707771303
+  best epoch:                    7
+  best validation accuracy:      0.4730999872088432
+  test loss:                     1.5147934246063233
+  test accuracy:                 0.4714999866485596
+Epoch 9 of 100 took 1.8157293796539307s
+  learning rate:                 0.001
+  training loss:                 1.4009818989038467
+  training accuracy:             0.5092999874800443
+  validation loss:               1.5236842691898347
+  validation accuracy:           0.4785999882221222
+  best epoch:                    9
+  best validation accuracy:      0.4785999882221222
+  test loss:                     1.5096686840057374
+  test accuracy:                 0.47149998813867566
+Epoch 10 of 100 took 1.6187620162963867s
+  learning rate:                 0.001
+  training loss:                 1.3738965809345245
+  training accuracy:             0.5215249867737293
+  validation loss:               1.516320799589157
+  validation accuracy:           0.4817999878525734
+  best epoch:                    10
+  best validation accuracy:      0.4817999878525734
+  test loss:                     1.5097038316726685
+  test accuracy:                 0.47619998693466187
+Epoch 11 of 100 took 1.5924584865570068s
+  learning rate:                 0.001
+  training loss:                 1.3506403827667237
+  training accuracy:             0.528899986743927
+  validation loss:               1.5007592272758483
+  validation accuracy:           0.4870999875664711
+  best epoch:                    11
+  best validation accuracy:      0.4870999875664711
+  test loss:                     1.495388867855072
+  test accuracy:                 0.4776999863982201
+Epoch 12 of 100 took 1.5256285667419434s
+  learning rate:                 0.001
+  training loss:                 1.335165832042694
+  training accuracy:             0.5374249868839979
+  validation loss:               1.519220324754715
+  validation accuracy:           0.4817999884486198
+  best epoch:                    11
+  best validation accuracy:      0.4870999875664711
+  test loss:                     1.495388867855072
+  test accuracy:                 0.4776999863982201
+Epoch 13 of 100 took 1.6522490978240967s
+  learning rate:                 0.001
+  training loss:                 1.3097883453965187
+  training accuracy:             0.5408749859035015
+  validation loss:               1.5109114408493043
+  validation accuracy:           0.49069998681545257
+  best epoch:                    13
+  best validation accuracy:      0.49069998681545257
+  test loss:                     1.4903089952468873
+  test accuracy:                 0.48439998775720594
+Epoch 14 of 100 took 7.181089162826538s
+  learning rate:                 0.001
+  training loss:                 1.2925925843417645
+  training accuracy:             0.5484249878674745
+  validation loss:               1.501589983701706
+  validation accuracy:           0.4937999886274338
+  best epoch:                    14
+  best validation accuracy:      0.4937999886274338
+  test loss:                     1.4778869700431825
+  test accuracy:                 0.48709998667240145
+Epoch 15 of 100 took 8.676968812942505s
+  learning rate:                 0.001
+  training loss:                 1.2768967375159264
+  training accuracy:             0.5564999876916409
+  validation loss:               1.4924257099628448
+  validation accuracy:           0.4928999862074852
+  best epoch:                    14
+  best validation accuracy:      0.4937999886274338
+  test loss:                     1.4778869700431825
+  test accuracy:                 0.48709998667240145
+Epoch 16 of 100 took 11.429597616195679s
+  learning rate:                 0.001
+  training loss:                 1.2599200968444348
+  training accuracy:             0.5600999879091978
+  validation loss:               1.4982223296165467
+  validation accuracy:           0.49539998710155486
+  best epoch:                    16
+  best validation accuracy:      0.49539998710155486
+  test loss:                     1.4818965792655945
+  test accuracy:                 0.48929998695850374
+Traceback (most recent call last):
+  File "/home/haoooooooooooookkkkk/sophomore_autumn/ANN/HW2/codes/mlp/main.py", line 140, in <module>
+    train_acc, train_loss = train_epoch(mlp_model, X_train, y_train, optimizer)
+  File "/home/haoooooooooooookkkkk/sophomore_autumn/ANN/HW2/codes/mlp/main.py", line 83, in train_epoch
+    loss += loss_.cpu().data.numpy()
+KeyboardInterrupt
