@@ -121,23 +121,23 @@ if __name__ == '__main__':
 		X_train, X_test, y_train, y_test = load_cifar_4d(args.data_dir)
 		X_val, y_val = X_train[40000:], y_train[40000:]
 		X_train, y_train = X_train[:40000], y_train[:40000]
-		mlp_model = Model(args=args,drop_rate=args.drop_rate)
-		mlp_model.to(device)
-		print(mlp_model)
-		optimizer = optim.Adam(mlp_model.parameters(), lr=args.learning_rate)
+		cnn_model = Model(args=args,drop_rate=args.drop_rate)
+		cnn_model.to(device)
+		print(cnn_model)
+		optimizer = optim.Adam(cnn_model.parameters(), lr=args.learning_rate)
 
 		# model_path = os.path.join(args.train_dir, 'checkpoint_%d.pth.tar' % args.inference_version)
 		# if os.path.exists(model_path):
-		# 	mlp_model = torch.load(model_path)
+		# 	cnn_model = torch.load(model_path)
 
 		pre_losses = [1e18] * 3
 		best_val_acc = 0.0
 		for epoch in range(1, args.num_epochs+1):
 			start_time = time.time()
-			train_acc, train_loss = train_epoch(mlp_model, X_train, y_train, optimizer)
+			train_acc, train_loss = train_epoch(cnn_model, X_train, y_train, optimizer)
 			X_train, y_train = shuffle(X_train, y_train, 1)
 
-			val_acc, val_loss = valid_epoch(mlp_model, X_val, y_val)
+			val_acc, val_loss = valid_epoch(cnn_model, X_val, y_val)
 
 			wandb.log({
 				'train_acc':train_acc,
@@ -150,11 +150,11 @@ if __name__ == '__main__':
 			if val_acc >= best_val_acc:
 				best_val_acc = val_acc
 				best_epoch = epoch
-				test_acc, test_loss = valid_epoch(mlp_model, X_test, y_test)
+				test_acc, test_loss = valid_epoch(cnn_model, X_test, y_test)
 				# with open(os.path.join(args.train_dir, 'checkpoint_{}.pth.tar'.format(epoch)), 'wb') as fout:
-				# 	torch.save(mlp_model, fout)
+				# 	torch.save(cnn_model, fout)
 				# with open(os.path.join(args.train_dir, 'checkpoint_0.pth.tar'), 'wb') as fout:
-				# 	torch.save(mlp_model, fout)
+				# 	torch.save(cnn_model, fout)
 
 				wandb.log({
 					'test_acc':test_acc,
@@ -179,18 +179,18 @@ if __name__ == '__main__':
 			pre_losses = pre_losses[1:] + [train_loss]
 
 	else:
-		mlp_model = Model()
-		mlp_model.to(device)
+		cnn_model = Model()
+		cnn_model.to(device)
 		model_path = os.path.join(args.train_dir, 'checkpoint_%d.pth.tar' % args.inference_version)
 		if os.path.exists(model_path):
-			mlp_model = torch.load(model_path)
+			cnn_model = torch.load(model_path)
 
 		X_train, X_test, y_train, y_test = load_cifar_4d(args.data_dir)
 
 		count = 0
 		for i in range(len(X_test)):
 			test_image = X_test[i].reshape((1, 3 * 32 * 32))
-			result = inference(mlp_model, test_image)[0]
+			result = inference(cnn_model, test_image)[0]
 			if result == y_test[i]:
 				count += 1
 		print("test accuracy: {}".format(float(count) / len(X_test)))

@@ -1,0 +1,225 @@
+########################
+# Filled Code
+########################
+# ../codes/mlp/model.py:1
+    def __init__(self, num_features, momentum=0.1):
+        self.momentum = momentum
+        self.weight = Parameter(torch.ones(self.num_features))
+        self.bias = Parameter(torch.zeros(self.num_features))
+        self.register_buffer('running_mean', torch.zeros(num_features))
+        self.register_buffer('running_var', torch.ones(num_features))
+
+        if self.training:
+            mean = torch.mean(input=input, dim=0)
+            var = torch.var(input=input, dim=0)
+
+            self.running_mean = (1-self.momentum) *self.running_mean+self.momentum*mean
+            self.running_var = (1-self.momentum) *self.running_var+self.momentum*var
+
+            std_deviation = torch.sqrt(var+1e-10)
+            return ((input-mean)/std_deviation)*self.weight+self.bias
+        else:
+            std_deviation = torch.sqrt(self.running_var+1e-10)
+            return ((input-self.running_mean)/std_deviation)*self.weight+self.bias
+
+
+# ../codes/mlp/model.py:2
+        if self.training:
+            mask=torch.bernoulli(torch.zeros(input.shape,device=input.device), 1-self.p)/(1-self.p)
+            return input*mask
+        else:
+            return input
+
+
+# ../codes/mlp/model.py:3
+        self.model = nn.Sequential(OrderedDict([
+            ('fc1', nn.Linear(3*32*32, 1024)),
+            ('bn', BatchNorm1d(1024)) if not args.no_bn else ('none',nn.Identity()),
+            ('relu', nn.ReLU()),
+            ('dropout',Dropout(drop_rate)) if not args.no_dropout else ('none',nn.Identity()),
+            ('fc2', nn.Linear(1024, 10))
+        ]))
+
+# ../codes/mlp/model.py:4
+        logits = self.model(x)
+
+# ../codes/cnn/model.py:1
+    def __init__(self, num_features, momentum=0.1):
+        super(BatchNorm2d, self).__init__()
+        self.momentum=momentum
+        self.weight = Parameter(torch.zeros(num_features))
+        self.bias = Parameter(torch.zeros(num_features))
+        self.register_buffer('running_mean', torch.zeros(num_features))
+        self.register_buffer('running_var', torch.ones(num_features))
+        init.ones_(self.weight)
+        init.zeros_(self.bias)
+        # input: [batch_size, num_feature_map, height, width]
+        if self.training:
+            mean=torch.mean(input=input, dim=(0,2,3))
+            var=torch.var(input=input, dim=(0,2,3))
+
+            self.running_mean = (1-self.momentum) * \
+                self.running_mean+self.momentum*mean
+            self.running_var = (1-self.momentum) * \
+                self.running_var+self.momentum*var
+
+            std_deviation=torch.sqrt(var+1e-10)
+            return (input-mean[:,None,None])/std_deviation[:,None,None]*self.weight[:,None,None]+self.bias[:,None,None]
+        else:
+            std_deviation=torch.sqrt(self.running_var+1e-10)
+            return (input-self.running_mean[:,None,None])/std_deviation[:,None,None]*self.weight[:,None,None]+self.bias[:,None,None]
+
+# ../codes/cnn/model.py:2
+        # input: [batch_size, num_feature_map, height, width]
+        if self.training:
+            mask=torch.bernoulli(torch.zeros(input.shape[-2:],device=input.device),1-self.p)/(1-self.p)
+            return mask*input
+        else:
+            return input
+
+# ../codes/cnn/model.py:3
+        self.model=nn.Sequential(OrderedDict([
+            ('conv1',nn.Conv2d(3,256,kernel_size=5,padding=2)),
+            ('bn1',BatchNorm2d(256)) if not args.no_bn else ('none',nn.Identity()),
+            ('relu1',nn.ReLU()),
+            ('dropout1',Dropout()) if not args.no_dropout else ('none',nn.Identity()),
+            ('mp1',nn.MaxPool2d(kernel_size=(5,5),padding=(2,2),stride=(3,3))),
+            ('conv2',nn.Conv2d(256,256,kernel_size=7,padding=3)),
+            ('bn',BatchNorm2d(256)) if not args.no_bn else ('none',nn.Identity()),
+            ('relu2',nn.ReLU()),
+            ('dropout2',Dropout()) if not args.no_dropout else ('none',nn.Identity()),
+            ('mp2',nn.MaxPool2d(kernel_size=(5,5),padding=(2,2),stride=(4,4))),
+        ]))
+        self.fc=nn.Linear(256*3*3,10)
+
+# ../codes/cnn/model.py:4
+        temp=self.model(x)
+        logits = self.fc(torch.reshape(temp,(x.shape[0],-1)))
+
+
+########################
+# References
+########################
+
+########################
+# Other Modifications
+########################
+# _codes/mlp/main.py -> ../codes/mlp/main.py
+# 14 + import wandb
+# 34 + parser.add_argument('--project_name',type=str,default='ANN_HW2',
+# 35 +     help='Project name in wandb. Default: ANN_HW2')
+# 36 + parser.add_argument('--run_name',type=str,default='random_run',
+# 37 +     help='Display name for this run in wandb. Default: random_run')
+# 38 + parser.add_argument('--no_dropout',default=False,action='store_true',
+# 39 +     help='Whether to abandon dropout lays')
+# 40 + parser.add_argument('--no_bn',default=False,action='store_true',
+# 41 +     help='Whether to abandon Batch Normalization lays')
+# 44 +
+# 45 + wandb.init(project=args.project_name,name=args.run_name)
+# 46 +
+# 47 + config=wandb.config
+# 48 + config.batch_size=args.batch_size
+# 49 + config.num_epochs=args.num_epochs
+# 50 + config.learning_rate=args.learning_rate
+# 51 + config.drop_rate=args.drop_rate
+# 108 -         mlp_model = Model(drop_rate=drop_rate)
+# 125 +         mlp_model = Model(args=args,drop_rate=args.drop_rate)
+# 125 ?                           ++++++++++          +++++
+# 126 +
+# 127 +         wandb.watch(mlp_model)
+# 128 +
+# 111 -         optimizer = optim.Adam(mlp_model.parameters(), lr=args.learning_rate)
+# 131 +         optimizer = optim.AdamW(mlp_model.parameters(), lr=args.learning_rate)
+# 131 ?                               +
+# 154 +
+# 155 +                 wandb.log({
+# 156 +                     'test_acc':test_acc,
+# 157 +                     'test_loss':test_loss
+# 158 +                 },step=epoch)
+# 172 +
+# 177 +
+# 178 +             wandb.log({
+# 179 +                 'train_acc':train_acc,
+# 180 +                 'train_loss':train_loss,
+# 181 +                 'val_acc':val_acc,
+# 182 +                 'val_loss':val_loss,
+# 183 +                 'time_spent':epoch_time,
+# 184 +                 'lr':optimizer.param_groups[0]['lr']
+# 185 +             },step=epoch)
+# _codes/mlp/model.py -> ../codes/mlp/model.py
+# 7 + from typing import OrderedDict
+# 8 +
+# 9 +
+# 43 +
+# 61 +
+# 40 -     def __init__(self, drop_rate=0.5):
+# 63 +     def __init__(self, args,drop_rate=0.5):
+# 63 ?                        +++++
+# 58 -         acc = torch.mean(correct_pred.float())  # Calculate the accuracy in this mini-batch
+# 88 +         # Calculate the accuracy in this mini-batch
+# 89 +         acc = torch.mean(correct_pred.float())
+# _codes/cnn/main.py -> ../codes/cnn/main.py
+# 14 + import wandb
+# 34 + parser.add_argument('--project_name',type=str,default='ANN_HW2',
+# 35 +     help='Project name in wandb. Default: ANN_HW2')
+# 36 + parser.add_argument('--run_name',type=str,default='random_run',
+# 37 +     help='Display name for this run in wandb. Default: random_run')
+# 38 + parser.add_argument('--no_dropout',default=False,action='store_true',
+# 39 +     help='Whether to abandon dropout lays')
+# 40 + parser.add_argument('--no_bn',default=False,action='store_true',
+# 41 +     help='Whether to abandon Batch Normalization lays')
+# 44 + wandb.init(project=args.project_name,name=args.run_name)
+# 45 +
+# 46 + config=wandb.config
+# 47 + config.batch_size=args.batch_size
+# 48 + config.num_epochs=args.num_epochs
+# 49 + config.learning_rate=args.learning_rate
+# 50 + config.drop_rate=args.drop_rate
+# 108 -         cnn_model = Model(drop_rate=args.drop_rate)
+# 124 +         cnn_model = Model(args=args,drop_rate=args.drop_rate)
+# 124 ?                           ++++++++++
+# 142 +             wandb.log({
+# 143 +                 'train_acc':train_acc,
+# 144 +                 'train_loss':train_loss,
+# 145 +                 'val_acc':val_acc,
+# 146 +                 'val_loss':val_loss
+# 147 +             },step=epoch)
+# 148 +
+# 149 +
+# 130 -                 with open(os.path.join(args.train_dir, 'checkpoint_{}.pth.tar'.format(epoch)), 'wb') as fout:
+# 154 +                 # with open(os.path.join(args.train_dir, 'checkpoint_{}.pth.tar'.format(epoch)), 'wb') as fout:
+# 154 ?                ++
+# 131 -                     torch.save(cnn_model, fout)
+# 131 ?                  ^^^
+# 155 +                 # 	torch.save(cnn_model, fout)
+# 155 ?                 + ^
+# 132 -                 with open(os.path.join(args.train_dir, 'checkpoint_0.pth.tar'), 'wb') as fout:
+# 156 +                 # with open(os.path.join(args.train_dir, 'checkpoint_0.pth.tar'), 'wb') as fout:
+# 156 ?                ++
+# 133 -                     torch.save(cnn_model, fout)
+# 133 ?                  ^^^
+# 157 +                 # 	torch.save(cnn_model, fout)
+# 157 ?                 + ^
+# 158 +
+# 159 +                 wandb.log({
+# 160 +                     'test_acc':test_acc,
+# 161 +                     'test_loss':test_loss
+# 162 +                 },step=epoch)
+# 153 -         print("begin testing")
+# 164 -             test_image = X_test[i].reshape((1, 3, 32, 32))
+# 164 ?                                                 ^   ^
+# 192 +             test_image = X_test[i].reshape((1, 3 * 32 * 32))
+# 192 ?                                                 ^^   ^^
+# _codes/cnn/model.py -> ../codes/cnn/model.py
+# 7 + from typing import OrderedDict
+# 7 - class BatchNorm1d(nn.Module):
+# 7 ?                ^
+# 8 + class BatchNorm2d(nn.Module):
+# 8 ?                ^
+# 40 -     def __init__(self, drop_rate=0.5):
+# 61 +     def __init__(self, args, drop_rate=0.5):
+# 61 ?                        ++++++
+# 47 -     def forward(self, x, y=None):
+# 81 +     def forward(self, x, y=None):
+# 81 ?                                  +
+
