@@ -11,3 +11,5 @@ ref/
 cifar-10_data/
 
 nouse/
+
+wandb/
