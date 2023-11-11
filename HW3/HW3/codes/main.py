@@ -72,18 +72,17 @@ def fast_evaluate(model, data, batch_size, PAD_ID, device):
 
             # TODO START
             # Implement the Perplexity metric. Basically it should be the same as the loss function used for training the model.
-            tgt_ids = input_ids[:,[i for i in range(1,input_ids.shape[1])]+[0]]
+            tgt_ids = input_ids[:,1:]
             outputs = model(input_ids)
-            lm_logits = outputs["logits"]
+            lm_logits = outputs["logits"][:,:-1,:]
 
-            loss = ce_loss_fct(lm_logits.view(-1, lm_logits.shape[-1]), tgt_ids.contiguous().view(-1))
+            loss = ce_loss_fct(lm_logits.reshape(-1,lm_logits.shape[-1]), tgt_ids.reshape(-1))
             # HINT: We set the loss to 0 where [PAD] token is the label, except for the last token, where [PAD] token worked as the "eod of sentence" token.
-            loss_mask = torch.where(tgt_ids==PAD_ID,0,1)
-            for seq_ind in range(0,loss_mask.shape[0]):
-                for tok_ind in range(0,loss_mask.shape[1]):
-                    if loss_mask[seq_ind][tok_ind]==0:
-                        loss_mask[seq_ind][tok_ind]=1
-                        break
+            loss_mask = torch.ones_like(tgt_ids,dtype=float)
+            loss_mask=(input_ids[:,:-1]!=PAD_ID).float()
+            loss_mask[:,0]=1.0
+
+
             # size of loss: (batch_size,)
             loss = torch.reshape(loss,lm_logits.shape[:-1])*loss_mask
             loss=torch.sum(loss,1)/torch.sum(loss_mask,dim=1)

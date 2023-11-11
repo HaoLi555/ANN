@@ -304,20 +304,18 @@ class TfmrLMHeadModel(nn.Module):
             # TODO START
             # Implement the loss function. Note that you should shift logits so that tokens < n predict n
             # HINT: We set the loss to 0 where [PAD] token is the label, except for the last token, where [PAD] token worked as the "eod of sentence" token.
-            golden_labels=labels[:,[i for i in range(1,labels.shape[1])]+[0]]
+            golden_labels=labels[:,1:]
+            lm_logits=lm_logits[:,:-1,:]
             ce=ce_loss_fct(input=torch.reshape(lm_logits,(-1,lm_logits.shape[-1])),target=torch.reshape(golden_labels,(-1,)))
-            ce=torch.reshape(ce,labels.shape)
+            ce=torch.reshape(ce,golden_labels.shape)
             
-            padded=torch.where(golden_labels==PAD_ID,0,1)
-            for seq_index in range(0,padded.shape[0]):
-                for tok_index in range(0,padded.shape[1]):
-                    if padded[seq_index][tok_index]==0:
-                        padded[seq_index][tok_index]=1
-                        break
+            loss_mask = torch.ones_like(golden_labels,dtype=float)
+            loss_mask=(labels[:,:-1]!=PAD_ID).float()
+            loss_mask[:,0]=1.0
 
-            ce=ce*padded
+            ce=ce*loss_mask
             
-            temp=torch.sum(ce,dim=1)/torch.sum(padded,dim=1)
+            temp=torch.sum(ce,dim=1)/torch.sum(loss_mask,dim=1)
             loss=temp.sum()/temp.shape[0]
             # TODO END
 
