@@ -37,7 +37,7 @@ class TfmrAttention(nn.Module):
             "bias",
             # TODO START
             # define the bias term for constructing the causal mask (i.e., seeing only prefix tokens).
-            torch.triu(torch.ones(max_positions,max_positions,dtype=bool)).repeat(1,1,1,1)
+            torch.tril(torch.ones(max_positions,max_positions,dtype=bool)).repeat(1,1,1,1)
             # TODO END
         )
         self.register_buffer("masked_bias", torch.tensor(-1e4))
@@ -71,8 +71,12 @@ class TfmrAttention(nn.Module):
 
         seq_len=attn_weights.shape[2]
         query_num=attn_weights.shape[3]
-        causal_mask = self.bias[:,:,:seq_len,seq_len-query_num:seq_len]
+        causal_mask = self.bias[:,:,seq_len-query_num:seq_len,:seq_len]
+
+        # 2 transposes: for alignment in params with the gpt2 model which the pretrained model params were generated
+        attn_weights = torch.transpose(attn_weights,2,3)
         attn_weights = torch.where(causal_mask, attn_weights, self.masked_bias.to(attn_weights.dtype))
+        attn_weights = torch.transpose(attn_weights,2 ,3)
 
         attn_weights = torch.softmax(attn_weights,dim=2)
         attn_weights = self.attn_dropout(attn_weights)
