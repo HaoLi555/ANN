@@ -11,6 +11,7 @@ from torch import optim
 from tokenizer import get_tokenizer
 import os
 from model_tfmr import TfmrLMHeadModel, TransposeLinear
+import wandb
 
 from configuration import ModelConfig
 
@@ -34,9 +35,9 @@ parser.add_argument("--test", type=str, default=None,
     help="Evaluate the model with the specified name. Default: None")
 parser.add_argument("--data_dir", type=str, default="./data",
     help="Data directory. Default: ../data")
-parser.add_argument("--train_dir", type=str, default="./train_test",
+parser.add_argument("--train_dir", type=str, default="./train",
     help="Training directory for saving model. Default: ./train")
-parser.add_argument("--pretrain_dir", type=str, default="None",
+parser.add_argument("--pretrain_dir", type=str, default=None,
     help="Pre-Training directory for loading pretrained model. Default: None")
 parser.add_argument("--maxlen", type=int, default=35,
     help="Maximum length for training/inference. Default: 35")    
@@ -71,16 +72,20 @@ def fast_evaluate(model, data, batch_size, PAD_ID, device):
 
             # TODO START
             # Implement the Perplexity metric. Basically it should be the same as the loss function used for training the model.
-            tgt_ids = input_ids
+            tgt_ids = input_ids[:,[i for i in range(1,input_ids.shape[1])]+[0]]
             outputs = model(input_ids)
             lm_logits = outputs["logits"]
 
             loss = ce_loss_fct(lm_logits.view(-1, lm_logits.shape[-1]), tgt_ids.contiguous().view(-1))
             # HINT: We set the loss to 0 where [PAD] token is the label, except for the last token, where [PAD] token worked as the "eod of sentence" token.
             loss_mask = torch.where(tgt_ids==PAD_ID,0,1)
-            loss_mask[:,-1]=1
+            for seq_ind in range(0,loss_mask.shape[0]):
+                for tok_ind in range(0,loss_mask.shape[1]):
+                    if loss_mask[seq_ind][tok_ind]==0:
+                        loss_mask[seq_ind][tok_ind]=1
+                        break
             # size of loss: (batch_size,)
-            loss = torch.reshape(loss,lm_logits.shape)*loss_mask
+            loss = torch.reshape(loss,lm_logits.shape[:-1])*loss_mask
             loss=torch.sum(loss,1)/torch.sum(loss_mask,dim=1)
             # TODO END
             all_loss.append(loss)
@@ -99,7 +104,10 @@ def evaluate(gen_ids, truth_ids, cpu_count=20):
     for ngrams in [4]:
         print(f"computing BLEU-{ngrams}")
         bleu_irl_fw, bleu_irl_bw = [], []
-        weights = np.ones(ngrams) / ngrams
+
+        # weights = np.ones(ngrams) / ngrams
+        # modified because for a np.ndarray, weights[0][0] raises IndexError while for a list, weights[0][0] raises TypeError
+        weights = [1/ngrams] * ngrams
 
         tasks = ((truth_ids, gen_ids[i], weights) for i in range(sample_hyps_num))
         pool = Pool(cpu_count)
@@ -148,12 +156,12 @@ def load_data(path, tokenizer, PAD_ID, field_list=["train", "dev", "test"], maxl
     return data, data_remove_pad
 
 
-def load_model(pretrained_dir, model_name="pretrained_ckpt.bin"):
+def load_model(pretrained_dir, model_name="pretrained_ckpt.bin", config_file="config.json"):
     model_path = os.path.join(pretrained_dir, model_name)
 
     if os.path.exists(model_path):
         print(f"Loading model from {model_path}")
-        config_path = os.path.join(pretrained_dir, "config.json")
+        config_path = os.path.join(pretrained_dir, config_file)
         assert os.path.exists(config_path), f"config.json must exist in {pretrained_dir}"
         print(f"[WARNING] Overiding args.model_config with {config_path}")
         with open(config_path) as f:
@@ -187,6 +195,13 @@ def get_init_weights_func(config):
 def main():
     args = parser.parse_args()
     print(args)
+
+    wandb.init(
+        project='ANN-HW3',
+        name=args.name,
+        config=vars(args)
+    )
+
     set_seed(1229)
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     if not os.path.exists(args.train_dir):
@@ -242,7 +257,7 @@ def main():
                 best_epoch = epoch
 
                 torch.save(model.state_dict(), os.path.join(args.train_dir, f"checkpoint_{args.name}.bin"))
-                with open(os.path.join(args.train_dir, "config.json"), "w") as f:
+                with open(os.path.join(args.train_dir, f"config_{args.name}.json"), "w") as f:
                     json.dump(config.__dict__, f)
 
                 epoch_time = time.time() - start_time
@@ -252,27 +267,34 @@ def main():
                 print("  validation perplexity:         " + str(val_ppl))
                 print("  best epoch:                    " + str(best_epoch))
                 print("  best validation perplexity:    " + str(best_val_ppl))
+                
+                wandb.log({
+                    "training loss":train_loss,
+                    "validation loss":val_loss,
+                    "validation perplexity":val_ppl
+                },step=epoch)
             else:
                 print("Validation perplexity: {:.3f}, becomes larger. Stop training.".format(val_ppl))
                 break
 
     else:
-        model, config = load_model(args.train_dir, model_name=f"checkpoint_{args.test}.bin")
+        model, config = load_model(args.train_dir, model_name=f"checkpoint_{args.test}.bin",config_file=f"config_{args.test}.json")
         model.to(device)
         print(model)
         test_loss, test_ppl = fast_evaluate(model=model, data=data["test"], batch_size=args.batch_size, PAD_ID=PAD_ID, device=device)
         print("        test_set, perplexity {:.2f}".format(test_ppl))
         result = model.inference(device=device, PAD_ID=PAD_ID, 
             batch_size=args.batch_size, maxlen=args.maxlen, decode_strategy=args.decode_strategy, temperature=args.temperature, top_p=args.top_p)
-        with open(f"output_{args.decode_strategy}.txt", "w") as fout:
+        with open(f"output_{args.name}_{args.decode_strategy}.txt", "w") as fout:
             for k, output in enumerate(result):
                 out = tokenizer.decode(output)
                 print(k, out)
                 fout.write(out + "\n")
         eval_result = evaluate(gen_ids=result, truth_ids=data_remove_pad["test"])
         print("        test_set, forward BLEU-4 {:.3f}, backward BLEU-4 {:.3f}, harmonic BLEU-4 {:.3f}".format(eval_result["fw-bleu-4"], eval_result["bw-bleu-4"], eval_result["fw-bw-bleu-4"]))
-        print(f"        test_set, write inference results to output_{args.decode_strategy}.txt")
+        print(f"        test_set, write inference results to output_{args.name}_{args.decode_strategy}.txt")
 
+    wandb.finish()
 
 if __name__ == "__main__":
     main()

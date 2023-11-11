@@ -13,3 +13,9 @@ cifar-10_data/
 nouse/
 
 wandb/
+
+pretrain/
+
+train/
+
+HW3/HW3/codes/*.txt

@@ -3,6 +3,7 @@ import torch
 import torch.nn as nn
 from torch.nn import CrossEntropyLoss
 import torch.nn.functional as F
+from tqdm import tqdm
 
 ACT2FN = {
     "relu": F.relu,
@@ -36,7 +37,7 @@ class TfmrAttention(nn.Module):
             "bias",
             # TODO START
             # define the bias term for constructing the causal mask (i.e., seeing only prefix tokens).
-            torch.triu(torch.ones(max_positions,max_positions))
+            torch.triu(torch.ones(max_positions,max_positions,dtype=bool)).repeat(1,1,1,1)
             # TODO END
         )
         self.register_buffer("masked_bias", torch.tensor(-1e4))
@@ -62,12 +63,15 @@ class TfmrAttention(nn.Module):
     def _attn(self, query, key, value):
         # TODO START
         # implement the multi-head mask self-attnetion mechanism
+        # (batch_size, num_attn_heads, sequence_length, query_num)
         attn_weights = torch.matmul(key,torch.transpose(query,2,3))
 
         if self.scale_attn_weights:
             attn_weights = attn_weights / (float(value.size(-1)) ** 0.5)
 
-        causal_mask = self.bias
+        seq_len=attn_weights.shape[2]
+        query_num=attn_weights.shape[3]
+        causal_mask = self.bias[:,:,:seq_len,seq_len-query_num:seq_len]
         attn_weights = torch.where(causal_mask, attn_weights, self.masked_bias.to(attn_weights.dtype))
 
         attn_weights = torch.softmax(attn_weights,dim=2)
@@ -76,6 +80,7 @@ class TfmrAttention(nn.Module):
         attn_output = torch.matmul(torch.transpose(value,2,3),attn_weights)
         # (batch_size, num_attn_heads, sequence_length, attn_head_size)
         attn_output=torch.transpose(attn_output,2,3)
+        # output (batch_size, num_attn_heads, sequence_length=softmax, sequence_length=query_num)
         # weights (batch_size, num_attn_heads, sequence_length=softmax, sequence_length=query_num)
         return attn_output, attn_weights
         # TODO END
@@ -230,7 +235,7 @@ class TfmrModel(nn.Module):
 
         # TODO START
         # Implement the positional embeddings. Note that the length of cache hidden states used during inference
-        position_embeds = self.wpe(torch.arange(past_length,past_length+input_shape[-1])).repeat(input_shape[0],1,1)
+        position_embeds = self.wpe(torch.arange(past_length,past_length+input_shape[-1],device=device)).repeat(input_shape[0],1,1)
         # TODO END
         hidden_states = inputs_embeds + position_embeds
 
@@ -299,10 +304,16 @@ class TfmrLMHeadModel(nn.Module):
             # TODO START
             # Implement the loss function. Note that you should shift logits so that tokens < n predict n
             # HINT: We set the loss to 0 where [PAD] token is the label, except for the last token, where [PAD] token worked as the "eod of sentence" token.
-            ce=ce_loss_fct(input=lm_logits,target=labels)
+            golden_labels=labels[:,[i for i in range(1,labels.shape[1])]+[0]]
+            ce=ce_loss_fct(input=torch.reshape(lm_logits,(-1,lm_logits.shape[-1])),target=torch.reshape(golden_labels,(-1,)))
+            ce=torch.reshape(ce,labels.shape)
             
-            padded=torch.where(labels==PAD_ID,0,1)
-            padded[:,labels.shape[-1]-1]=1
+            padded=torch.where(golden_labels==PAD_ID,0,1)
+            for seq_index in range(0,padded.shape[0]):
+                for tok_index in range(0,padded.shape[1]):
+                    if padded[seq_index][tok_index]==0:
+                        padded[seq_index][tok_index]=1
+                        break
 
             ce=ce*padded
             
@@ -324,11 +335,11 @@ class TfmrLMHeadModel(nn.Module):
         self.eval()
         allgen = []
         with torch.no_grad():
-            for i in range(0, int(5000/batch_size)+1):
+            for i in tqdm(range(0, int(5000/batch_size)+1),desc="batch"):
                 input_ids = torch.tensor([[PAD_ID] for _ in range(batch_size)]).to(device)
                 past_key_values = None
                 output_ids = input_ids
-                for _ in range(maxlen):
+                for _ in tqdm(range(maxlen), desc="token",leave=True):
                     outputs = self(input_ids, past_key_values=past_key_values, use_cache=True)
                     logits = outputs["logits"]
                     past_key_values = outputs["past_key_values"]
@@ -338,20 +349,12 @@ class TfmrLMHeadModel(nn.Module):
                         # TODO START
                         # implement top-p sampling
                         prob = logits.softmax(dim=-1)
-                        prob, indices=torch.sort(prob,descending=True)
+                        prob, indices=torch.sort(prob,descending=False,dim=-1)
 
-                        voca_size=logits.shape[-1]
-                        new_token=[]
-                        for one_seq in prob:
-                            sum=0
-                            top_p_prob=[]
-                            for index in range(0,voca_size):
-                                sum+=one_seq[index]
-                                if sum>=top_p:
-                                    top_p_prob=one_seq[:index+1]
-                            sampled_ind=torch.multinomial(top_p_prob,1)
-                            new_token.append(indices[int(sampled_ind)])
-                        new_token=new_token[:,None]
+                        mask=prob.cumsum_(dim=-1)>(1-top_p)
+                        prob=prob*mask
+                        sampled=torch.multinomial(prob,1) # (batch_size, 1)
+                        now_token=torch.empty_like(sampled).scatter_(1,torch.zeros_like(sampled),sampled)
                         # TODO END
                     else:
                         prob = logits.softmax(dim=-1) # shape: (batch_size, num_vocabs)
