@@ -2,5 +2,8 @@
     "[python]": {
         "editor.defaultFormatter": "ms-python.autopep8",
     },
+    "python.analysis.extraPaths": [
+        "./HW3/HW3/codes"
+    ],
 
 }
