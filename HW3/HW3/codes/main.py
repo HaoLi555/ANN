@@ -198,7 +198,7 @@ def main():
 
     wandb.init(
         project='ANN-HW3',
-        name=args.name if args.test is None else args.test+"_"+args.decode_strategy,
+        name=args.name if args.test is None else args.test+"_"+args.decode_strategy+"_"+_str(args.temperature),
         config=vars(args)
     )
 
@@ -292,7 +292,7 @@ def main():
                 fout.write(out + "\n")
         eval_result = evaluate(gen_ids=result, truth_ids=data_remove_pad["test"])
         print("        test_set, forward BLEU-4 {:.3f}, backward BLEU-4 {:.3f}, harmonic BLEU-4 {:.3f}".format(eval_result["fw-bleu-4"], eval_result["bw-bleu-4"], eval_result["fw-bw-bleu-4"]))
-        print(f"        test_set, write inference results to output_{args.name}_{args.decode_strategy}.txt")
+        print(f"        test_set, write inference results to output_{args.name}_{args.decode_strategy}_{str(args.temperature)}.txt")
 
     wandb.finish()
 
