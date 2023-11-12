@@ -198,7 +198,7 @@ def main():
 
     wandb.init(
         project='ANN-HW3',
-        name=args.name,
+        name=args.name if args.test is None else args.test+"_"+args.decode_strategy,
         config=vars(args)
     )
 
@@ -285,7 +285,7 @@ def main():
         print("        test_set, perplexity {:.2f}".format(test_ppl))
         result = model.inference(device=device, PAD_ID=PAD_ID, 
             batch_size=args.batch_size, maxlen=args.maxlen, decode_strategy=args.decode_strategy, temperature=args.temperature, top_p=args.top_p)
-        with open(f"output_{args.name}_{args.decode_strategy}.txt", "w") as fout:
+        with open(f"output_{args.test}_{args.decode_strategy}.txt", "w") as fout:
             for k, output in enumerate(result):
                 out = tokenizer.decode(output)
                 print(k, out)

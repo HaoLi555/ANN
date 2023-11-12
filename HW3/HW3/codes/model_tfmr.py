@@ -343,7 +343,7 @@ class TfmrLMHeadModel(nn.Module):
                 input_ids = torch.tensor([[PAD_ID] for _ in range(batch_size)]).to(device)
                 past_key_values = None
                 output_ids = input_ids
-                for _ in tqdm(range(maxlen), desc="token",leave=True):
+                for _ in tqdm(range(maxlen), desc="token",leave=False):
                     outputs = self(input_ids, past_key_values=past_key_values, use_cache=True)
                     logits = outputs["logits"]
                     past_key_values = outputs["past_key_values"]
@@ -355,10 +355,10 @@ class TfmrLMHeadModel(nn.Module):
                         prob = logits.softmax(dim=-1)
                         prob, indices=torch.sort(prob,descending=False,dim=-1)
 
-                        mask=prob.cumsum_(dim=-1)>(1-top_p)
+                        mask=torch.cumsum(prob,dim=-1)>(1-top_p)
                         prob=prob*mask
                         sampled=torch.multinomial(prob,1) # (batch_size, 1)
-                        now_token=torch.empty_like(sampled).scatter_(1,torch.zeros_like(sampled),sampled)
+                        now_token=torch.gather(indices, 1, sampled)
                         # TODO END
                     else:
                         prob = logits.softmax(dim=-1) # shape: (batch_size, num_vocabs)
