@@ -198,7 +198,7 @@ def main():
 
     wandb.init(
         project='ANN-HW3',
-        name=args.name if args.test is None else args.test+"_"+args.decode_strategy+"_"+_str(args.temperature),
+        name=args.name if args.test is None else args.test+"_"+args.decode_strategy+"_"+str(args.temperature),
         config=vars(args)
     )
 
