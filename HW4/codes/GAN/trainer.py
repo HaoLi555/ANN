@@ -40,47 +40,47 @@ class Trainer(object):
         ############################
         # (1) Update D network: maximize log(D(x)) + log(1 - D(G(z)))
         ###########################
-		# clear gradients
-		self._netD.zero_grad()
+        # clear gradients
+        self._netD.zero_grad()
 
-		# compute the gradients of binary_cross_entropy(netD(real_imgs), 1) w.r.t. netD
+        # compute the gradients of binary_cross_entropy(netD(real_imgs), 1) w.r.t. netD
         # record average D(real_imgs)
         # TODO START		
-		loss_D_real = 
-		D_x = 
-		loss_real.backward()
+        loss_D_real = 
+        D_x = 
+        loss_real.backward()
         # TODO END
 
         # ** accumulate ** the gradients of binary_cross_entropy(netD(fake_imgs), 0) w.r.t. netD
         # record average D(fake_imgs)
         # TODO START
-		loss_D_fake = 
-		D_G_z1 = 
-		loss_fake.backward()
+        loss_D_fake = 
+        D_G_z1 = 
+        loss_fake.backward()
         # TODO END
-		
-		# update netD
-		self._optimD.step()
+        
+        # update netD
+        self._optimD.step()
 
         ############################
         # (2) Update G network: maximize log(D(G(z)))
         ###########################
-		# clear gradients
-		self._netG.zero_grad()
-		
+        # clear gradients
+        self._netG.zero_grad()
+        
         # compute the gradients of binary_cross_entropy(netD(fake_imgs), 1) w.r.t. netG
         # record average D(fake_imgs)
         # TODO START
-		loss_G = 
-		D_G_z2 = 
-		loss_G.backward()
+        loss_G = 
+        D_G_z2 = 
+        loss_G.backward()
         # TODO END
-		
-		# update netG
-		self._optimG.step()
+        
+        # update netG
+        self._optimG.step()
 
         # return what are specified in the docstring
-		return loss_D_real + loss_D_fake, loss_G, D_x, D_G_z1, D_G_z2
+        return loss_D_real + loss_D_fake, loss_G, D_x, D_G_z1, D_G_z2
 
     def train(self, num_training_updates, logging_steps, saving_steps):
         fixed_noise = torch.randn(32, self._netG.latent_dim, 1, 1, device=self._device)
