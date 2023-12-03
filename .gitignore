@@ -19,3 +19,9 @@ pretrain/
 train/
 
 HW3/HW3/codes/*.txt
+
+runs/
+
+results/
+
+inception/

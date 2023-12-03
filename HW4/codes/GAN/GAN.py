@@ -29,7 +29,20 @@ class Generator(nn.Module):
 
 		# TODO START
         self.decoder = nn.Sequential(
-            
+            nn.ConvTranspose2d(self.latent_dim,self.hidden_dim*4,4,1,0),
+            nn.BatchNorm2d(self.hidden_dim*4),
+            nn.ReLU(inplace=True),
+
+            nn.ConvTranspose2d(self.hidden_dim*4,self.hidden_dim*2,4,2,1),
+            nn.BatchNorm2d(self.hidden_dim*2),
+            nn.ReLU(inplace=True),
+
+            nn.ConvTranspose2d(self.hidden_dim*2,self.hidden_dim,4,2,1),
+            nn.BatchNorm2d(self.hidden_dim),
+            nn.ReLU(inplace=True),
+
+            nn.ConvTranspose2d(self.hidden_dim, 1, 4,2,1),
+            nn.Tanh()
         )
 		# TODO END
 

@@ -69,6 +69,7 @@ if __name__ == "__main__":
     samples = samples[:num_samples].expand(-1, 3, -1, -1) * 0.5 + 0.5
     samples = samples.cpu()
 
+    print("computing FID score")
     fid = fid_score.calculate_fid_given_images(real_imgs, samples, args.batch_size, device)
     tb_writer.add_scalar('fid', fid)
     print("FID score: {:.3f}".format(fid), flush=True)
